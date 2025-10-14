@@ -1,0 +1,61 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>{{ pageTitle }}</title>
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+	<style>
+	:root {
+	--primary-orange: #FF5E17;
+    --secondary-orange: #FF9E5E;
+    --dark-grey: #2D2D2D;
+    --medium-grey: #5A5A5A;
+    --light-grey: #E0E0E0;
+}
+
+body {
+    background-color: var(--light-grey) !important;
+    color: var(--dark-grey);
+}
+
+
+.btn-primary {
+    background-color: var(--primary-orange) !important;
+    border-color: var(--primary-orange) !important;
+}
+
+.btn-primary:hover {
+    background-color: var(--secondary-orange) !important;
+    border-color: var(--secondary-orange) !important;
+}
+	</style>
+
+	
+<!-- Below is where any HTML files that will use this base file are going to attatch themselves as an extension of 'base.html'-->
+{% block head %}{% endblock %}
+</head>
+<body>
+	<header>
+		<nav>
+			<ul>
+				
+				<li><a href="{{ url_for('homepage') }}">Home</a></li>
+                <li><a href="{{ url_for('log_out') }}">Log out</a></li>
+			</ul>
+		</nav>
+    </header>
+
+    {% block body %}
+    {% endblock %}
+	<footer>
+        <p>&copy; Capstone Project: E-CAT: Enhanced Cyber AI/ML Tools with Ensemble/Boosting based Classifications </p>
+    </footer>
+</body>
+</html>
+
+</body>
+</html>
