@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="auto">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="PC Hardware Pro - Your one-stop shop for high-performance PC components including RAM, CPUs, motherboards, and custom gaming PCs." />
+    <meta name="author" content="PC Hardware Pro" />
+    <meta name="generator" content="Astro v5.13.2" />
+    <title>PC Hardware Pro - Premium PC Components & Gaming PCs</title>
+    
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    
+    <!-- Bootstrap Icons CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <!-- Custom CSS -->
+    <style>
+        .bd-placeholder-img {
+            font-size: 1.125rem;
+            text-anchor: middle;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            user-select: none;
+        }
+        @media (min-width: 768px) {
+            .bd-placeholder-img-lg {
+                font-size: 3.5rem;
+            }
+        }
+        .b-example-divider {
+            width: 100%;
+            height: 3rem;
+            background-color: rgba(0, 0, 0, 0.1);
+            border: solid rgba(0, 0, 0, 0.15);
+            border-width: 1px 0;
+            box-shadow: inset 0 0.5em 1.5em rgba(0, 0, 0, 0.1), inset 0 0.125em 0.5em rgba(0, 0, 0, 0.15);
+        }
+        .b-example-vr {
+            flex-shrink: 0;
+            width: 1.5rem;
+            height: 100vh;
+        }
+        .bi {
+            vertical-align: -0.125em;
+            fill: currentColor;
+        }
+        .nav-scroller {
+            position: relative;
+            z-index: 2;
+            height: 2.75rem;
+            overflow-y: hidden;
+        }
+        .nav-scroller .nav {
+            display: flex;
+            flex-wrap: nowrap;
+            padding-bottom: 1rem;
+            margin-top: -1px;
+            overflow-x: auto;
+            text-align: center;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+        }
+        .btn-bd-primary {
+            --bd-violet-bg: #712cf9;
+            --bd-violet-rgb: 112.520718, 44.062154, 249.437846;
+            --bs-btn-font-weight: 600;
+            --bs-btn-color: var(--bs-white);
+            --bs-btn-bg: var(--bd-violet-bg);
+            --bs-btn-border-color: var(--bd-violet-bg);
+            --bs-btn-hover-color: var(--bs-white);
+            --bs-btn-hover-bg: #6528e0;
+            --bs-btn-hover-border-color: #6528e0;
+            --bs-btn-focus-shadow-rgb: var(--bd-violet-rgb);
+            --bs-btn-active-color: var(--bs-btn-hover-color);
+            --bs-btn-active-bg: #5a23c8;
+            --bs-btn-active-border-color: #5a23c8;
+        }
+        .bd-mode-toggle {
+            z-index: 1500;
+        }
+        .bd-mode-toggle .dropdown-menu .active .bi {
+            display: block !important;
+        }
+        
+        /* Custom styles for PC parts store */
+        .carousel-item {
+            height: 600px;
+            background-color: #000;
+            position: relative;
+        }
+        .carousel-bg-1 {
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), 
+                        url('https://images.unsplash.com/photo-1604754742629-3e5728249d73?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1170');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        .carousel-bg-2 {
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), 
+                        url('https://images.unsplash.com/photo-1599792215800-042be231c6cd?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1074');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .carousel-bg-3 {
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), 
+                        url('https://images.unsplash.com/photo-1672923491001-3e58a608e418?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1074');
+            
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        .carousel-item img {
+            object-fit: cover;
+            height: 100%;
+            width: 100%;
+        }
+        .carousel-caption {
+            background-color: rgba(0, 0, 0, 0.6);
+            border-radius: 10px;
+            padding: 20px;
+        }
+        .carousel-caption h1{
+            color: #00ffff; 
+        }
+        .carousel-caption p{
+            color: #00ffff;
+        }
+        .carousel-control-prev,
+    .carousel-control-next {
+        width: 8%;
+        opacity: 0.8;
+    }
+
+    .carousel-control-prev:hover,
+    .carousel-control-next:hover {
+        opacity: 1;
+    }
+
+    .carousel-control-prev-icon {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23fff'%3e%3cpath d='M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z'/%3e%3c/svg%3e");
+        width: 2.5rem;
+        height: 2.5rem;
+    }
+
+    .carousel-control-next-icon {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23fff'%3e%3cpath d='M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+        width: 2.5rem;
+        height: 2.5rem;
+    }
+
+    /* Add background for better contrast */
+    .carousel-control-prev-icon,
+    .carousel-control-next-icon {
+        background-color: rgba(0, 0, 0, 0.4);
+        border-radius: 50%;
+        background-size: 50% 50%;
+        background-position: center;
+    }
+
+    .carousel-control-prev-icon:hover,
+    .carousel-control-next-icon:hover {
+        background-color: rgba(0, 0, 0, 0.6);
+    }
+            .pc-part-card {
+            transition: transform 0.3s;
+            height: 100%;
+        }
+        .pc-part-card:hover {
+            transform: translateY(-10px);
+        }
+        .featurette-divider {
+            margin: 5rem 0;
+        }
+        .featurette-heading {
+            font-weight: 300;
+            line-height: 1;
+            letter-spacing: -.05rem;
+        }
+        .part-category {
+            text-align: center;
+            margin-top: 3rem;
+        }
+        .category-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            color: #0d6efd;
+        }
+        .bg-dark-custom {
+            background-color: #1a1a1a !important;
+        }
+        .feature-icon {
+            width: 4rem;
+            height: 4rem;
+            border-radius: .75rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Theme toggle -->
+    <div class="dropdown position-fixed bottom-0 end-0 mb-3 me-3 bd-mode-toggle">
+        <button class="btn btn-bd-primary py-2 dropdown-toggle d-flex align-items-center" id="bd-theme" type="button" aria-expanded="false" data-bs-toggle="dropdown" aria-label="Toggle theme (auto)">
+            <i class="bi bi-circle-half theme-icon-active"></i>
+            <span class="visually-hidden" id="bd-theme-text">Toggle theme</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="bd-theme-text">
+            <li>
+                <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="light" aria-pressed="false">
+                    <i class="bi bi-sun me-2 opacity-50"></i>
+                    Light
+                    <i class="bi bi-check2 ms-auto d-none"></i>
+                </button>
+            </li>
+            <li>
+                <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="dark" aria-pressed="false">
+                    <i class="bi bi-moon-stars me-2 opacity-50"></i>
+                    Dark
+                    <i class="bi bi-check2 ms-auto d-none"></i>
+                </button>
+            </li>
+            <li>
+                <button type="button" class="dropdown-item d-flex align-items-center active" data-bs-theme-value="auto" aria-pressed="true">
+                    <i class="bi bi-circle-half me-2 opacity-50"></i>
+                    Auto
+                    <i class="bi bi-check2 ms-auto d-none"></i>
+                </button>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Header -->
+    <header data-bs-theme="dark">
+        <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark-custom">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">
+                    <i class="bi bi-cpu-fill me-2"></i>PC Hardware Pro
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarCollapse">
+                    <ul class="navbar-nav me-auto mb-2 mb-md-0">
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="#">Home</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Components
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#">CPUs</a></li>
+                                <li><a class="dropdown-item" href="#">Motherboards</a></li>
+                                <li><a class="dropdown-item" href="#">RAM</a></li>
+                                <li><a class="dropdown-item" href="#">GPUs</a></li>
+                                <li><a class="dropdown-item" href="#">Storage</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Gaming PCs</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Accessories</a>
+                        </li>
+                    </ul>
+                    <form class="d-flex" role="search">
+                        <input class="form-control me-2" type="search" placeholder="Search products..." aria-label="Search">
+                        <button class="btn btn-outline-primary" type="submit">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </form>
+                    <div class="navbar-nav ms-3">
+                        <a href="log_in.html">
+                            <button type="button" class="btn btn-primary">Login</button>
+                        </a>
+                        <a class="nav-link" href="#"><i class="bi bi-cart3"></i> Cart</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Hero Carousel -->
+        <div id="myCarousel" class="carousel slide mb-6" data-bs-ride="carousel">
+            <div class="carousel-indicators">
+                <button type="button" data-bs-target="#myCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+                <button type="button" data-bs-target="#myCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+                <button type="button" data-bs-target="#myCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+            </div>
+            <div class="carousel-inner">
+                <div class="carousel-item active carousel-bg-1">
+    <!-- No inner div needed for background -->
+            <div class="container">
+                    <div class="carousel-caption text-start">
+                        <h1>Build Your Dream Gaming Rig</h1>
+                        <p class="opacity-75">Premium components for maximum performance. From CPUs to GPUs, we have everything you need.</p>
+                        <p><a class="btn btn-lg btn-primary" href="#">Shop Components</a></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="carousel-item carousel-bg-2">
+                <div class="container">
+                    <div class="carousel-caption">
+                        <h1>Ready-to-Play Gaming PCs</h1>
+                        <p>Pre-built systems optimized for gaming, streaming, and content creation.</p>
+                        <p><a class="btn btn-lg btn-primary" href="#">View Gaming PCs</a></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="carousel-item carousel-bg-3">
+                <div class="container">
+                    <div class="carousel-caption text-end">
+                        <h1>Expert PC Building Support</h1>
+                        <p>Our team of specialists will help you choose the perfect components for your needs and budget.</p>
+                        <p><a class="btn btn-lg btn-primary" href="#">Get Expert Advice</a></p>
+                    </div>
+                </div>
+            </div>
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#myCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#myCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+        </div>
+
+        <!-- Product Categories -->
+        <div class="container marketing">
+            <div class="part-category">
+                <h2 class="fw-bold mb-5">Shop by Category</h2>
+            </div>
+            <div class="row">
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="card pc-part-card border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <i class="bi bi-cpu category-icon"></i>
+                            <h3 class="h4">Processors</h3>
+                            <p>Latest generation CPUs from Intel and AMD for gaming and productivity.</p>
+                            <a href="#" class="btn btn-outline-primary">Shop CPUs</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="card pc-part-card border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <i class="bi bi-motherboard category-icon"></i>
+                            <h3 class="h4">Motherboards</h3>
+                            <p>Compatible boards for your CPU with advanced features and connectivity.</p>
+                            <a href="#" class="btn btn-outline-primary">Shop Motherboards</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="card pc-part-card border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <i class="bi bi-memory category-icon"></i>
+                            <h3 class="h4">Memory</h3>
+                            <p>High-speed DDR4 and DDR5 RAM kits for optimal system performance.</p>
+                            <a href="#" class="btn btn-outline-primary">Shop RAM</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="card pc-part-card border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <i class="bi bi-pc-display category-icon"></i>
+                            <h3 class="h4">Gaming PCs</h3>
+                            <p>Pre-built systems optimized for gaming, streaming, and content creation.</p>
+                            <a href="#" class="btn btn-outline-primary">Shop PCs</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Featured Products -->
+            <hr class="featurette-divider">
+            <div class="row featurette">
+                <div class="col-md-7">
+                    <h2 class="featurette-heading fw-normal lh-1">Latest Generation CPUs. <span class="text-body-secondary">Unleash maximum performance.</span></h2>
+                    <p class="lead">Experience next-level computing with our selection of Intel Core i9 and AMD Ryzen processors. Built for gamers, creators, and professionals who demand the best. Multi-core performance, higher clock speeds, and advanced architecture for your most demanding tasks.</p>
+                    <a href="#" class="btn btn-primary">View CPU Collection</a>
+                </div>
+                <div class="col-md-5">
+                    <div class="bg-light rounded p-4 text-center">
+                        <i class="bi bi-cpu" style="font-size: 10rem; color: #0d6efd;"></i>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="featurette-divider">
+
+            <div class="row featurette">
+                <div class="col-md-7 order-md-2">
+                    <h2 class="featurette-heading fw-normal lh-1">High-Speed Memory. <span class="text-body-secondary">Boost your system's performance.</span></h2>
+                    <p class="lead">Upgrade your rig with our premium DDR4 and DDR5 memory modules. From 16GB kits for everyday computing to 128GB kits for professional workstations, we have the perfect RAM for your needs. Low latency, high frequency, and RGB lighting options available.</p>
+                    <a href="#" class="btn btn-primary">Explore RAM Options</a>
+                </div>
+                <div class="col-md-5 order-md-1">
+                    <div class="bg-light rounded p-4 text-center">
+                        <i class="bi bi-memory" style="font-size: 10rem; color: #198754;"></i>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="featurette-divider">
+
+            <div class="row featurette">
+                <div class="col-md-7">
+                    <h2 class="featurette-heading fw-normal lh-1">Premium Motherboards. <span class="text-body-secondary">The foundation of your build.</span></h2>
+                    <p class="lead">Choose from our extensive selection of motherboards from top brands like ASUS, MSI, and Gigabyte. Whether you need an ATX board with extensive connectivity or a compact ITX board for a small form factor build, we have options for every need and budget.</p>
+                    <a href="#" class="btn btn-primary">Browse Motherboards</a>
+                </div>
+                <div class="col-md-5">
+                    <div class="bg-light rounded p-4 text-center">
+                        <i class="bi bi-motherboard" style="font-size: 10rem; color: #6f42c1;"></i>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="featurette-divider">
+
+            <!-- Why Choose Us Section -->
+            <div class="row g-4 py-5">
+                <div class="col-md-4 d-flex align-items-start">
+                    <div class="icon-square text-body-emphasis bg-body-secondary d-inline-flex align-items-center justify-content-center fs-4 flex-shrink-0 me-3">
+                        <i class="bi bi-shield-check text-primary"></i>
+                    </div>
+                    <div>
+                        <h3 class="fs-2 text-body-emphasis">Warranty & Support</h3>
+                        <p>All our components come with manufacturer warranties, and our dedicated support team is here to help with any technical questions.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 d-flex align-items-start">
+                    <div class="icon-square text-body-emphasis bg-body-secondary d-inline-flex align-items-center justify-content-center fs-4 flex-shrink-0 me-3">
+                        <i class="bi bi-truck text-primary"></i>
+                    </div>
+                    <div>
+                        <h3 class="fs-2 text-body-emphasis">Fast Shipping</h3>
+                        <p>We offer same-day shipping on orders placed before 3 PM, so you can start building your dream PC as soon as possible.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 d-flex align-items-start">
+                    <div class="icon-square text-body-emphasis bg-body-secondary d-inline-flex align-items-center justify-content-center fs-4 flex-shrink-0 me-3">
+                        <i class="bi bi-currency-dollar text-primary"></i>
+                    </div>
+                    <div>
+                        <h3 class="fs-2 text-body-emphasis">Best Prices</h3>
+                        <p>We continuously monitor prices to ensure you get the best deals on premium PC components and gaming systems.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="container py-5">
+            <div class="row">
+                <div class="col-12 col-md">
+                    <i class="bi bi-cpu-fill" style="font-size: 2rem;"></i>
+                    <small class="d-block mb-3 text-body-secondary">&copy; 2025</small>
+                </div>
+                <div class="col-6 col-md">
+                    <h5>Products</h5>
+                    <ul class="list-unstyled text-small">
+                        <li><a class="link-secondary text-decoration-none" href="#">CPUs</a></li>
+                        <li><a class="link-secondary text-decoration-none" href="#">Motherboards</a></li>
+                        <li><a class="link-secondary text-decoration-none" href="#">RAM</a></li>
+                        <li><a class="link-secondary text-decoration-none" href="#">Gaming PCs</a></li>
+                    </ul>
+                </div>
+                <div class="col-6 col-md">
+                    <h5>Support</h5>
+                    <ul class="list-unstyled text-small">
+                        <li><a class="link-secondary text-decoration-none" href="#">Build Guides</a></li>
+                        <li><a class="link-secondary text-decoration-none" href="#">Compatibility Checker</a></li>
+                        <li><a class="link-secondary text-decoration-none" href="#">Warranty</a></li>
+                        <li><a class="link-secondary text-decoration-none" href="#">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div class="col-6 col-md">
+                    <h5>Company</h5>
+                    <ul class="list-unstyled text-small">
+                        <li><a class="link-secondary text-decoration-none" href="#">About</a></li>
+                        <li><a class="link-secondary text-decoration-none" href="#">Careers</a></li>
+                        <li><a class="link-secondary text-decoration-none" href="#">Locations</a></li>
+                        <li><a class="link-secondary text-decoration-none" href="#">Privacy Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+        </footer>
+    </main>
+
+    <!-- Bootstrap JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    
+    <!-- Fixed Theme toggle script -->
+    <script>
+        (() => {
+            'use strict'
+            const storedTheme = localStorage.getItem('theme')
+            const getPreferredTheme = () => {
+                if (storedTheme) {
+                    return storedTheme
+                }
+                return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+            }
+            const setTheme = function (theme) {
+                if (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    document.documentElement.setAttribute('data-bs-theme', 'dark')
+                } else {
+                    document.documentElement.setAttribute('data-bs-theme', theme)
+                }
+            }
+            setTheme(getPreferredTheme())
+            const showActiveTheme = theme => {
+                const themeSwitcher = document.querySelector('#bd-theme')
+                const themeIcon = document.querySelector('.theme-icon-active')
+                const btnToActive = document.querySelector(`[data-bs-theme-value="${theme}"]`)
+                
+                // Remove active class from all theme buttons
+                document.querySelectorAll('[data-bs-theme-value]').forEach(element => {
+                    element.classList.remove('active')
+                    element.querySelector('.bi-check2').classList.add('d-none')
+                })
+                
+                // Add active class to current theme button
+                if (btnToActive) {
+                    btnToActive.classList.add('active')
+                    btnToActive.querySelector('.bi-check2').classList.remove('d-none')
+                }
+                
+                // Update theme icon
+                if (themeIcon) {
+                    themeIcon.classList.remove('bi-sun', 'bi-moon', 'bi-circle-half')
+                    if (theme === 'dark') {
+                        themeIcon.classList.add('bi-moon')
+                    } else if (theme === 'light') {
+                        themeIcon.classList.add('bi-sun')
+                    } else {
+                        themeIcon.classList.add('bi-circle-half')
+                    }
+                }
+            }
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+                if (storedTheme !== 'light' && storedTheme !== 'dark') {
+                    setTheme(getPreferredTheme())
+                }
+            })
+            window.addEventListener('DOMContentLoaded', () => {
+                showActiveTheme(getPreferredTheme())
+                document.querySelectorAll('[data-bs-theme-value]')
+                    .forEach(toggle => {
+                        toggle.addEventListener('click', () => {
+                            const theme = toggle.getAttribute('data-bs-theme-value')
+                            localStorage.setItem('theme', theme)
+                            setTheme(theme)
+                            showActiveTheme(theme)
+                        })
+                    })
+            })
+        })()
+    </script>
+</body>
+</html>
