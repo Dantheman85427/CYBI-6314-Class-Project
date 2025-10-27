@@ -369,6 +369,7 @@ def homepage():
         #session['delete_account_confirmed'] = None
         return render_template('homepage2.html')
     else:
+        flash("Please log in to access the homepage.")
         return redirect(url_for('log_in'))
     
 """ #======================= Test =======================#
