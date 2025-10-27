@@ -175,6 +175,7 @@ with app.app_context():
 @app.route('/', methods=['POST', 'GET'])
 def log_in():
     if session.get('username'):
+        flash("You are already logged in.")
         return redirect(url_for('homepage'))
     else:
         if(UserCredentials.query.filter_by(user_Name='admin').first() is None):
@@ -242,11 +243,14 @@ def log_in():
             session['user_authenticated'] = None
             #session['delete_account_confirmed'] = None
         # Re-rendering the login page after a failed login attempt
-        return render_template('log_in2.html', form=form, username = username, passHash = passHash) #salt = salt
+        return render_template('log_in.html', form=form, username = username, passHash = passHash) #salt = salt
 
 #======================= Create_Account =======================#
 @app.route('/create_account',  methods=['POST', 'GET'])
 def Register():
+    if session.get('username'):
+        flash("You are already logged in.")
+        return redirect(url_for('homepage'))
     username = None
     email = None
     #phone = None
@@ -303,7 +307,7 @@ def Register():
      # Re-rendering the account creation page after an unsuccessful submission
     session['user_authenticated'] = None
     #session['delete_account_confirmed'] = None
-    return render_template('create_acct2.html', form=form, username = username, email = email, passHash = passHash) #, salt = salt
+    return render_template('create_acct.html', form=form, username = username, email = email, passHash = passHash) #, salt = salt
 
 #======================= (NOT IMPLEMENTED) Forgot_Password =======================#
 @app.route('/Forgot_Password')
@@ -367,7 +371,7 @@ def homepage():
     if session.get('username'):
         session['user_authenticated'] = None
         #session['delete_account_confirmed'] = None
-        return render_template('homepage2.html')
+        return render_template('homepage.html')
     else:
         flash("Please log in to access the homepage.")
         return redirect(url_for('log_in'))
