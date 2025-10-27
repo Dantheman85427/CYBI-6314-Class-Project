@@ -1,0 +1,383 @@
+{% extends 'base2.html' %}
+
+{% block title %}Create Account - PC Parts Store{% endblock %}
+
+{% block head %}
+<!-- Custom CSS -->
+<style>
+    /* Custom styles for registration page */
+    .register-hero {
+        background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), 
+                    url('https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80');
+        background-size: cover;
+        background-position: center;
+        color: white;
+        padding: 120px 0 80px;
+        text-align: center;
+    }
+    
+    .register-card {
+        background: var(--bs-body-bg);
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        padding: 2.5rem;
+        margin: -60px auto 3rem;
+        max-width: 500px;
+        position: relative;
+        z-index: 10;
+        border: 1px solid var(--bs-border-color);
+    }
+    
+    .form-control {
+        background-color: var(--bs-body-bg);
+        color: var(--bs-body-color);
+        border: 2px solid var(--bs-border-color);
+        border-radius: 8px;
+        padding: 12px 15px;
+        transition: all 0.3s ease;
+        margin-bottom: 1.2rem;
+    }
+    
+    .form-control:focus {
+        border-color: #712cf9;
+        box-shadow: 0 0 0 3px rgba(113, 44, 249, 0.2);
+        background-color: var(--bs-body-bg);
+        color: var(--bs-body-color);
+    }
+    
+    .form-label {
+        color: var(--bs-body-color);
+        font-weight: 500;
+    }
+    
+    .password-container {
+        position: relative;
+    }
+    
+    .password-toggle {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: var(--bs-secondary-color);
+        cursor: pointer;
+        z-index: 5;
+    }
+    
+    .password-toggle:hover {
+        color: #712cf9;
+    }
+    
+    .benefits-section {
+        padding: 4rem 0;
+        background-color: var(--bs-secondary-bg);
+    }
+    
+    .benefit-card {
+        text-align: center;
+        padding: 2rem 1rem;
+        transition: transform 0.3s;
+        height: 100%;
+        background-color: var(--bs-body-bg);
+        border-radius: 10px;
+        border: 1px solid var(--bs-border-color);
+    }
+    
+    .benefit-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .benefit-icon {
+        font-size: 3rem;
+        margin-bottom: 1.5rem;
+        color: #712cf9;
+    }
+    
+    .bg-dark-custom {
+        background-color: #1a1a1a !important;
+    }
+    
+    .feature-icon {
+        width: 4rem;
+        height: 4rem;
+        border-radius: .75rem;
+    }
+    
+    .pc-part-card {
+        transition: transform 0.3s;
+        height: 100%;
+    }
+    
+    .pc-part-card:hover {
+        transform: translateY(-10px);
+    }
+    
+    .category-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        color: #0d6efd;
+    }
+    
+    /* Dark theme specific fixes */
+    [data-bs-theme="dark"] .register-card {
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    
+    [data-bs-theme="dark"] .form-check-label {
+        color: var(--bs-body-color);
+    }
+    
+    [data-bs-theme="dark"] .text-muted {
+        color: #adb5bd !important;
+    }
+    
+    /* Ensure text is readable in both themes */
+    .text-theme-aware {
+        color: var(--bs-body-color);
+    }
+    
+    /* Fix for form text colors */
+    .form-text {
+        color: var(--bs-secondary-color) !important;
+    }
+    .alert {
+        margin: 1rem auto;
+        max-width: 400px;
+    }
+    .password-requirements {
+        color: var(--medium-grey);
+        font-size: 0.9rem;
+        margin-top: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+    <main>
+        <!-- Hero Section -->
+        <section class="register-hero">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <h1 class="display-4 fw-bold mb-4">Join PC Hardware Pro</h1>
+                        <p class="lead mb-0">Create your account to unlock exclusive deals, build wishlists, and access member-only content</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Registration Form -->
+        <section class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-6">
+                    <div class="register-card">
+                        <div class="text-center mb-4">
+                            <i class="bi bi-cpu-fill display-4 text-primary"></i>
+                            <h2 class="h3 mt-2 text-theme-aware">Create Your Account</h2>
+                            <p class="text-muted">Join our community of PC enthusiasts</p>
+                        </div>
+
+                        <form action="/create_account" id="registerForm" method="post">
+                            {{ form.hidden_tag() }}
+                            <!-- NOT IMPLEMENTED
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="firstName" class="form-label">First Name</label>
+                                        <input type="text" class="form-control" id="firstName" name="firstName" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="lastName" class="form-label">Last Name</label>
+                                        <input type="text" class="form-control" id="lastName" name="lastName" required>
+                                    </div>
+                                </div>
+                            </div>
+                            -->
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email Address</label>
+                                {{ form.email(class="form-control", id="email") }}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Username</label>
+                                {{ form.username(class="form-control", id="username") }}
+                            </div>
+                            
+                            <div class="mb-3 password-container">
+                                <label for="password" class="form-label">Password</label>
+                                {{ form.password(class="form-control", id="password", type="password") }}
+                                <button type="button" class="password-toggle" id="togglePassword">
+                                    <i class="bi bi-eye-slash"></i>
+                                </button>
+                            </div>
+                            <!--
+                            <div class="mb-3 password-container">
+                                <label for="confirmPassword" class="form-label">Confirm Password</label>
+                                <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                                <button type="button" class="password-toggle" id="toggleConfirmPassword">
+                                    <i class="bi bi-eye-slash"></i>
+                                </button>
+                            </div>
+                            -->
+                            <!--
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="newsletter" name="newsletter">
+                                <label class="form-check-label" for="newsletter">
+                                    Subscribe to our newsletter for exclusive deals and updates
+                                </label>
+                            </div>
+                            -->
+                            <!--
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="terms" name="terms" required>
+                                <label class="form-check-label" for="terms">
+                                    I agree to the <a href="#" class="text-decoration-none">Terms of Service</a> and <a href="#" class="text-decoration-none">Privacy Policy</a>
+                                </label>
+                            </div>
+                            -->
+                            <div class="d-grid">
+                                {{ form.submit(class="btn btn-bd-primary btn-lg", id="submitButton") }}
+                            </div>
+                        </form>
+                        {% for message in get_flashed_messages() %}
+                        <div class="alert alert-warning mt-3" role="alert">
+                            {{ message }}
+                        </div>
+                        {% endfor %}
+                        
+                        <div class="text-center mt-4">
+                            <p class="mb-0 text-theme-aware">Already have an account? <a href="{{ url_for('log_in') }}" class="text-decoration-none">Sign in here</a></p>
+                        </div>
+                        <div class="password-requirements">
+                            <h5>Password Requirements:</h5>
+                            <ul class="list-unstyled">
+                                <li>At least 9 characters</li>
+                                <li>1 uppercase letter</li>
+                                <li>1 number</li>
+                                <li>1 special character</li>
+                            </ul>
+                    </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Benefits Section -->
+        <section class="benefits-section">
+            <div class="container">
+                <div class="text-center mb-5">
+                    <h2 class="display-5 fw-bold text-theme-aware">Why Join PC Hardware Pro?</h2>
+                    <p class="lead text-theme-aware">Unlock exclusive benefits as a member of our community</p>
+                </div>
+                
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="benefit-card">
+                            <i class="bi bi-tags benefit-icon"></i>
+                            <h3 class="text-theme-aware">Exclusive Deals</h3>
+                            <p class="text-theme-aware">Get access to member-only discounts, flash sales, and special pricing on premium components.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="benefit-card">
+                            <i class="bi bi-heart benefit-icon"></i>
+                            <h3 class="text-theme-aware">Wishlist & Builds</h3>
+                            <p class="text-theme-aware">Save your favorite components, create custom PC builds, and track price changes.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="benefit-card">
+                            <i class="bi bi-lightning-charge benefit-icon"></i>
+                            <h3 class="text-theme-aware">Priority Support</h3>
+                            <p class="text-theme-aware">Get faster responses from our technical experts and dedicated customer service team.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="benefit-card">
+                            <i class="bi bi-truck benefit-icon"></i>
+                            <h3 class="text-theme-aware">Free Shipping</h3>
+                            <p class="text-theme-aware">Enjoy free expedited shipping on orders over $99 as a registered member.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="benefit-card">
+                            <i class="bi bi-gift benefit-icon"></i>
+                            <h3 class="text-theme-aware">Birthday Rewards</h3>
+                            <p class="text-theme-aware">Receive special birthday discounts and exclusive offers during your birthday month.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="benefit-card">
+                            <i class="bi bi-people benefit-icon"></i>
+                            <h3 class="text-theme-aware">Community Access</h3>
+                            <p class="text-theme-aware">Join our forums, participate in build challenges, and connect with fellow PC enthusiasts.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+{% endblock %}
+{% block scripts %}
+    <!-- Registration Form Script -->
+    <script>
+        // STILL BEING TESTED 
+        // Password toggle functionality
+        const togglePassword = document.querySelector('#togglePassword');
+        const password = document.querySelector('#password');
+        const eyeIcon = togglePassword.querySelector('i');
+
+        //const toggleConfirmPassword = document.querySelector('#toggleConfirmPassword');
+        //const confirmPassword = document.querySelector('#confirmPassword');
+        //const confirmEyeIcon = toggleConfirmPassword.querySelector('i');
+
+        togglePassword.addEventListener('click', function () {
+            // Toggle the password field type
+            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+            password.setAttribute('type', type);
+            
+            // Toggle the eye icon
+            eyeIcon.classList.toggle('bi-eye');
+            eyeIcon.classList.toggle('bi-eye-slash');
+        });
+
+        toggleConfirmPassword.addEventListener('click', function () {
+            // Toggle the confirm password field type
+            const type = confirmPassword.getAttribute('type') === 'password' ? 'text' : 'password';
+            confirmPassword.setAttribute('type', type);
+            
+            // Toggle the eye icon
+            confirmEyeIcon.classList.toggle('bi-eye');
+            confirmEyeIcon.classList.toggle('bi-eye-slash');
+        });
+
+        // Form validation
+        //document.getElementById('registerForm').addEventListener('submit', function(e) {
+        //   e.preventDefault();
+        //    
+        //    const password = document.getElementById('password').value;
+        //   const confirmPassword = document.getElementById('confirmPassword').value;
+        //    
+        //    if (password !== confirmPassword) {
+        //       alert('Passwords do not match. Please try again.');
+        //        return;
+        //    }
+        //    
+        //    if (password.length < 8) {
+        //        alert('Password must be at least 8 characters long.');
+        //        return;
+        //    }
+            
+            // If validation passes, you would typically submit the form to a server
+            // For this example, we'll show a success message
+            // Future redirect
+
+            // window.location.href = 'account.html';
+        //});
+
+    </script>
+{% endblock %}

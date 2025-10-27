@@ -1,0 +1,186 @@
+{% extends 'base2.html' %}
+
+{% block title %}Home - PC Parts Store{% endblock %}
+
+{% block head %}
+{% endblock %}
+
+{% block body %}
+<main>
+    <!-- Hero Carousel -->
+    <div id="myCarousel" class="carousel slide mb-6" data-bs-ride="carousel">
+        <div class="carousel-indicators">
+            <button type="button" data-bs-target="#myCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+            <button type="button" data-bs-target="#myCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+            <button type="button" data-bs-target="#myCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+        </div>
+        <div class="carousel-inner">
+            <div class="carousel-item active carousel-bg-1">
+<!-- No inner div needed for background -->
+        <div class="container">
+                <div class="carousel-caption text-start">
+                    <h1>Build Your Dream Gaming Rig</h1>
+                    <p class="opacity-75">Premium components for maximum performance. From CPUs to GPUs, we have everything you need.</p>
+                    <p><a class="btn btn-lg btn-primary" href="#">Shop Components</a></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="carousel-item carousel-bg-2">
+            <div class="container">
+                <div class="carousel-caption">
+                    <h1>Ready-to-Play Gaming PCs</h1>
+                    <p>Pre-built systems optimized for gaming, streaming, and content creation.</p>
+                    <p><a class="btn btn-lg btn-primary" href="#">View Gaming PCs</a></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="carousel-item carousel-bg-3">
+            <div class="container">
+                <div class="carousel-caption text-end">
+                    <h1>Expert PC Building Support</h1>
+                    <p>Our team of specialists will help you choose the perfect components for your needs and budget.</p>
+                    <p><a class="btn btn-lg btn-primary" href="#">Get Expert Advice</a></p>
+                </div>
+            </div>
+        </div>
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#myCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#myCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>
+
+    <!-- Product Categories -->
+    <div class="container marketing">
+        <div class="part-category">
+            <h2 class="fw-bold mb-5">Shop by Category</h2>
+        </div>
+        <div class="row">
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card pc-part-card border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <i class="bi bi-cpu category-icon"></i>
+                        <h3 class="h4">Processors</h3>
+                        <p>Latest generation CPUs from Intel and AMD for gaming and productivity.</p>
+                        <a href="#" class="btn btn-outline-primary">Shop CPUs</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card pc-part-card border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <i class="bi bi-motherboard category-icon"></i>
+                        <h3 class="h4">Motherboards</h3>
+                        <p>Compatible boards for your CPU with advanced features and connectivity.</p>
+                        <a href="#" class="btn btn-outline-primary">Shop Motherboards</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card pc-part-card border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <i class="bi bi-memory category-icon"></i>
+                        <h3 class="h4">Memory</h3>
+                        <p>High-speed DDR4 and DDR5 RAM kits for optimal system performance.</p>
+                        <a href="#" class="btn btn-outline-primary">Shop RAM</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card pc-part-card border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <i class="bi bi-pc-display category-icon"></i>
+                        <h3 class="h4">Gaming PCs</h3>
+                        <p>Pre-built systems optimized for gaming, streaming, and content creation.</p>
+                        <a href="#" class="btn btn-outline-primary">Shop PCs</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Featured Products -->
+        <hr class="featurette-divider">
+        <div class="row featurette">
+            <div class="col-md-7">
+                <h2 class="featurette-heading fw-normal lh-1">Latest Generation CPUs. <span class="text-body-secondary">Unleash maximum performance.</span></h2>
+                <p class="lead">Experience next-level computing with our selection of Intel Core i9 and AMD Ryzen processors. Built for gamers, creators, and professionals who demand the best. Multi-core performance, higher clock speeds, and advanced architecture for your most demanding tasks.</p>
+                <a href="#" class="btn btn-primary">View CPU Collection</a>
+            </div>
+            <div class="col-md-5">
+                <div class="bg-light rounded p-4 text-center">
+                    <i class="bi bi-cpu" style="font-size: 10rem; color: #0d6efd;"></i>
+                </div>
+            </div>
+        </div>
+
+        <hr class="featurette-divider">
+
+        <div class="row featurette">
+            <div class="col-md-7 order-md-2">
+                <h2 class="featurette-heading fw-normal lh-1">High-Speed Memory. <span class="text-body-secondary">Boost your system's performance.</span></h2>
+                <p class="lead">Upgrade your rig with our premium DDR4 and DDR5 memory modules. From 16GB kits for everyday computing to 128GB kits for professional workstations, we have the perfect RAM for your needs. Low latency, high frequency, and RGB lighting options available.</p>
+                <a href="#" class="btn btn-primary">Explore RAM Options</a>
+            </div>
+            <div class="col-md-5 order-md-1">
+                <div class="bg-light rounded p-4 text-center">
+                    <i class="bi bi-memory" style="font-size: 10rem; color: #198754;"></i>
+                </div>
+            </div>
+        </div>
+
+        <hr class="featurette-divider">
+
+        <div class="row featurette">
+            <div class="col-md-7">
+                <h2 class="featurette-heading fw-normal lh-1">Premium Motherboards. <span class="text-body-secondary">The foundation of your build.</span></h2>
+                <p class="lead">Choose from our extensive selection of motherboards from top brands like ASUS, MSI, and Gigabyte. Whether you need an ATX board with extensive connectivity or a compact ITX board for a small form factor build, we have options for every need and budget.</p>
+                <a href="#" class="btn btn-primary">Browse Motherboards</a>
+            </div>
+            <div class="col-md-5">
+                <div class="bg-light rounded p-4 text-center">
+                    <i class="bi bi-motherboard" style="font-size: 10rem; color: #6f42c1;"></i>
+                </div>
+            </div>
+        </div>
+
+        <hr class="featurette-divider">
+
+        <!-- Why Choose Us Section -->
+        <div class="row g-4 py-5">
+            <div class="col-md-4 d-flex align-items-start">
+                <div class="icon-square text-body-emphasis bg-body-secondary d-inline-flex align-items-center justify-content-center fs-4 flex-shrink-0 me-3">
+                    <i class="bi bi-shield-check text-primary"></i>
+                </div>
+                <div>
+                    <h3 class="fs-2 text-body-emphasis">Warranty & Support</h3>
+                    <p>All our components come with manufacturer warranties, and our dedicated support team is here to help with any technical questions.</p>
+                </div>
+            </div>
+            <div class="col-md-4 d-flex align-items-start">
+                <div class="icon-square text-body-emphasis bg-body-secondary d-inline-flex align-items-center justify-content-center fs-4 flex-shrink-0 me-3">
+                    <i class="bi bi-truck text-primary"></i>
+                </div>
+                <div>
+                    <h3 class="fs-2 text-body-emphasis">Fast Shipping</h3>
+                    <p>We offer same-day shipping on orders placed before 3 PM, so you can start building your dream PC as soon as possible.</p>
+                </div>
+            </div>
+            <div class="col-md-4 d-flex align-items-start">
+                <div class="icon-square text-body-emphasis bg-body-secondary d-inline-flex align-items-center justify-content-center fs-4 flex-shrink-0 me-3">
+                    <i class="bi bi-currency-dollar text-primary"></i>
+                </div>
+                <div>
+                    <h3 class="fs-2 text-body-emphasis">Best Prices</h3>
+                    <p>We continuously monitor prices to ensure you get the best deals on premium PC components and gaming systems.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

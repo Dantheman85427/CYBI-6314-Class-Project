@@ -75,15 +75,19 @@ def validatePassword(form, field):
             specials += 1
     if len(field.data) < passLen:
         print('len error')
+        flash('Password must contian at least ' + str(passLen) + ' characters')
         raise ValidationError('Password must contian at least ' + str(passLen) + ' characters')
     elif uppers < passCase:
         print('case error')
+        flash('Password must contain at least ' + str(passCase) + ' upper-case character')
         raise ValidationError('Password must contain at least ' + str(passCase) + ' upper-case character')
     elif digits < passNum:
         print('num error')
+        flash('Password must contain at least ' + str(passNum) + ' number')
         raise ValidationError('Password must contain at least ' + str(passNum) + ' number')
     elif specials < passSpec:
         print('spec error')
+        flash('Password must contain at least ' + str(passSpec) + ' special character')
         raise ValidationError('Password must contain at least ' + str(passSpec) + ' special character')
     
 def split_integer_at_rightmost_digit(input_integer):
@@ -142,7 +146,7 @@ class RegisterForm (FlaskForm):
     email = EmailField("Email: ", validators=[data_required()])
     #phone = TelField("Phone: ")
     password = StringField("Password: ", validators=[data_required(), validatePassword])
-    submit = SubmitField("Register")
+    submit = SubmitField("Create Account")
     
 #Create a login form class
 class LoginForm (FlaskForm):
@@ -238,7 +242,7 @@ def log_in():
             session['user_authenticated'] = None
             #session['delete_account_confirmed'] = None
         # Re-rendering the login page after a failed login attempt
-        return render_template('log_in.html', form=form, username = username, passHash = passHash) #salt = salt
+        return render_template('log_in2.html', form=form, username = username, passHash = passHash) #salt = salt
 
 #======================= Create_Account =======================#
 @app.route('/create_account',  methods=['POST', 'GET'])
@@ -299,9 +303,9 @@ def Register():
      # Re-rendering the account creation page after an unsuccessful submission
     session['user_authenticated'] = None
     #session['delete_account_confirmed'] = None
-    return render_template('create_acct.html', form=form, username = username, email = email, passHash = passHash) #, salt = salt
+    return render_template('create_acct2.html', form=form, username = username, email = email, passHash = passHash) #, salt = salt
 
-#======================= Forgot_Password =======================#
+#======================= (NOT IMPLEMENTED) Forgot_Password =======================#
 @app.route('/Forgot_Password')
 def forgotpw():
     if session.get('username'):
@@ -361,14 +365,27 @@ def forgotpw():
 @app.route('/Homepage')
 def homepage():
     if session.get('username'):
-        greeting = "Hello, " + session['username'] + '.'
-        flash(greeting)
         session['user_authenticated'] = None
         #session['delete_account_confirmed'] = None
-        return render_template('homepage.html')
+        return render_template('homepage2.html')
     else:
         return redirect(url_for('log_in'))
     
+""" #======================= Test =======================#
+@app.route('/test')
+def test():
+    return render_template('index2.html')
+
+#======================= Test =======================#
+@app.route('/test2')
+def log_in2():
+    return render_template('log_in2.html')
+
+#======================= Test =======================#
+@app.route('/test3')
+def test3():
+    return render_template('create_acct2.html') """
+
 #======================= Logout =======================#
 @app.route('/logout')
 def log_out():
