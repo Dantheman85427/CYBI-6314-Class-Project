@@ -26,11 +26,11 @@ passNum = 1
 passSpec = 1
 
 # Password hash generator
-# Function to hash a password
 def generateHash(passw):
     ph = PasswordHasher()
     return ph.hash(passw) #automatically stores the salt with the hash
 
+# NOT IMPLEMENTED YET
 def requires_confirmation(route):
     def decorator(func):
         @wraps(func)
@@ -48,7 +48,7 @@ def requires_confirmation(route):
         return wrapper
     return decorator
 
-# Function to strip multiple characters from a string
+# NOT IMPLEMENTED YET Function to strip multiple characters from a string
 def stripChars(input: string, strip: string):
     begStr = str(input)
     chars = str(strip)
@@ -73,6 +73,7 @@ def validatePassword(form, field):
             specials += 1
         elif ord(c) >= 123 and ord(c) <= 126:
             specials += 1
+# "raise ValidationError" is not working properly, so using flash messages for now
     if len(field.data) < passLen:
         print('len error')
         flash('Password must contian at least ' + str(passLen) + ' characters')
@@ -90,6 +91,7 @@ def validatePassword(form, field):
         flash('Password must contain at least ' + str(passSpec) + ' special character')
         raise ValidationError('Password must contain at least ' + str(passSpec) + ' special character')
     
+# NOT IMPLEMENTED YET
 def split_integer_at_rightmost_digit(input_integer):
     # Convert the integer to a string
     input_str = str(input_integer)
@@ -129,7 +131,7 @@ class network_Data(db.Model):
     analysis_results = db.Column(db.Text)  # Stores JSON-serialized DataFrame
     upload_time = db.Column(db.DateTime, default=datetime.utcnow)
 
-#Creating a model for user credentials
+# Creating a model for user credentials
 class  UserCredentials(db.Model):
     user_ID = db.Column(db.Integer, primary_key=True)
     user_Name = db.Column(db.String(50),nullable=False)
@@ -140,7 +142,7 @@ class  UserCredentials(db.Model):
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
     network_data = db.relationship('network_Data', backref='userCred', lazy=True)
 
-#Create a registration form class
+# Create a registration form class
 class RegisterForm (FlaskForm):
     username = StringField("Username: ", validators=[data_required()])
     email = EmailField("Email: ", validators=[data_required()])
@@ -148,9 +150,9 @@ class RegisterForm (FlaskForm):
     password = StringField("Password: ", validators=[data_required(), validatePassword])
     submit = SubmitField("Create Account")
     
-#Create a login form class
+# Create a login form class
 class LoginForm (FlaskForm):
-    username = StringField("Username: ", validators=[data_required()])
+    username = StringField("Username or Email: ", validators=[data_required()])
     password = StringField("Password: ", validators=[data_required()])
     submit = SubmitField("Sign in")
 
@@ -180,7 +182,6 @@ def log_in():
     else:
         if(UserCredentials.query.filter_by(user_Name='admin').first() is None):
             # Admin Creds for debugging purposes.  <------------------------------------------------------------------------------------ Remove before release
-            #adminSalt = generateSalt()
             adminPass = 'admin'  # Default password (change this before release)
             # Hash the password (Argon2 will handle salting internally)
             adminPassHash = generateHash(adminPass)
@@ -194,26 +195,22 @@ def log_in():
             db.session.add(adminUser)
             db.session.commit()
 
-
-            #db.session.add(Preferences(user_ID= UserCredentials.query.filter_by(user_Name='admin').first().user_ID, notifications= 0, study_time= 3600, break_time= 600))
-            #db.session.commit()
         # Initializes values to None 
         username = None
         password = None
         passHash = None
-        #salt = None
         # Specifies the form class to use
         form = LoginForm()
 
         #Checks if the submit button has been pressed
         if form.validate_on_submit():
             # Queries the database to see if the username exists
-            user = UserCredentials.query.filter_by(user_Name=form.username.data).first()
+            #user = UserCredentials.query.filter_by(user_Name=form.username.data).first()
+
+                        # Try to find user by username OR email
+            user = UserCredentials.query.filter((UserCredentials.user_Name == form.username.data) | (UserCredentials.user_Email == form.username.data)).first()
             # if user exists
             if user:
-                # The salt and hash associated with the user's profile are taken from the database
-                #salt = user.pass_salt
-                #userHash = user.pass_hash
                 # A new hash is generated with the password entered into the login form, using the same salt that is within the database
                 try: 
                     if form.password.data.lower() == "'or 1 = 1":
@@ -256,51 +253,42 @@ def Register():
     #phone = None
     password = None
     passHash = None
-    #salt = generateSalt()
     form = RegisterForm()
 
     # Checks if the submit button has been pressed
     if form.validate_on_submit():
+        # Check if username already exists
+        existing_username = UserCredentials.query.filter_by(user_Name=form.username.data).first()
         # Queries the database to see if the email already exists in the database
         user = UserCredentials.query.filter_by(user_Email=form.email.data).first()
-        if user is None:
-            # If no user exists with the email entered, checks to see if the phone number exists in the database
-            #user = UserCredentials.query.filter_by(user_Phone=form.phone.data).first()
-            #if user is None:
-            # If no user exists with the phone nunmber entered, A hash is generated from the user's password with a random salt
-            passHash = generateHash(form.password.data) #, salt
-            # A database object is created with the user's information
-            user = UserCredentials(user_Name = form.username.data, user_Email = form.email.data, pass_hash = passHash) #pass_salt = salt
-            session['username'] = user.user_Name                
-            
-            # The newly created user object is added to a database session, and committed as an entry to the user_credentials table
-            db.session.add(user)
-            db.session.commit()
-            session['user_id'] = (UserCredentials.query.filter_by(user_Name = form.username.data).first()).user_ID
+        if existing_username is None:
+            if user is None:
+                passHash = generateHash(form.password.data) #, salt
+                # A database object is created with the user's information
+                user = UserCredentials(user_Name = form.username.data, user_Email = form.email.data, pass_hash = passHash) #pass_salt = salt
+                session['username'] = user.user_Name                
+                
+                # The newly created user object is added to a database session, and committed as an entry to the user_credentials table
+                db.session.add(user)
+                db.session.commit()
+                session['user_id'] = (UserCredentials.query.filter_by(user_Name = form.username.data).first()).user_ID
 
-            # A database object is created alongside the user's account to store their preferences (initialized with default values).
-            #prefs = Preferences(user_ID= session.get('user_id'), notifications= 0, study_time= 3600, break_time= 600)
-            #db.session.add(prefs)
-            #db.session.commit()
-            # The user is logged in and redirected to the homepage
-            session['user_authenticated'] = None
-            #session['delete_account_confirmed'] = None
-            return redirect(url_for('homepage'))
+                # The user is logged in and redirected to the homepage
+                session['user_authenticated'] = None
+                #session['delete_account_confirmed'] = None
+                return redirect(url_for('homepage'))
             
-            # If the phone number that was entered is associated with an existing user account, the user is instead brought back to the registration page
-            #else:
-                #flash("Error: Phone number already in use.")
-        # If the email that was entered is associated with an existing user account, the user is instead brought back to the registration page
+            # If the email that was entered is associated with an existing user account, the user is instead brought back to the registration page
+            else:
+                flash("Error: Email already in use.")
         else:
-            flash("Error: Email already in use.")
+            flash("Error: Username already in use.")
 
         #Clearing the form data after it has been submitted
         username = form.username.data
         form.username.data = ''
         email = form.email.data
         form.email.data = ''
-        #phone = form.phone.data
-        #form.phone.data = ''
         password = form.password.data
         form.password.data = ''
 
@@ -371,6 +359,7 @@ def homepage():
     if session.get('username'):
         session['user_authenticated'] = None
         #session['delete_account_confirmed'] = None
+        flash("Welcome, " + session.get('username') + "!")
         return render_template('homepage.html')
     else:
         flash("Please log in to access the homepage.")
