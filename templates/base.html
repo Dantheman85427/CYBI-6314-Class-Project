@@ -252,11 +252,11 @@
                                 Components
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="#">CPUs</a></li>
-                                <li><a class="dropdown-item" href="#">Motherboards</a></li>
-                                <li><a class="dropdown-item" href="#">RAM</a></li>
-                                <li><a class="dropdown-item" href="#">GPUs</a></li>
-                                <li><a class="dropdown-item" href="#">Storage</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('parts') }}">CPUs</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('parts') }}">Motherboards</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('parts') }}">RAM</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('parts') }}">GPUs</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('parts') }}">Storage</a></li>
                             </ul>
                         </li>
                         <li class="nav-item">
@@ -274,13 +274,13 @@
                     </form>
                     <div class="navbar-nav ms-3">
 
-                        <a href="#">
+                        <a href="{{ url_for('account') }}">
                             <button type="button" class="btn btn-primary">Account</button>
                         </a>
                         <a href="{{ url_for('log_out') }}">
                             <button type="button" class="btn btn-primary">Logout</button>
                         </a>
-                        <a class="nav-link" href="#">
+                        <a class="nav-link" href="{{ url_for('cart') }}">
                             <i class="bi bi-cart3"></i> Cart
                         </a>
                         {% else %}
@@ -289,7 +289,7 @@
                                 <button type="button" class="btn btn-primary">Login</button>
                             </a>
                             {% else %}
-                            <a href="{{ url_for('Register') }}">
+                            <a href="{{ url_for('create_account') }}">
                                 <button type="button" class="btn btn-primary">Create Account</button>
                             </a>
                             {% endif %}

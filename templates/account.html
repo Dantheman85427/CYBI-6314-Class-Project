@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}Account - PC Parts Store{% endblock %}
+
+{% block head %}
+{% endblock %}
+
+{% block body %}
+<main>
+
+    
+    <!-- Flash messages -->
+    {% for message in get_flashed_messages() %}
+    <div class="alert alert-warning mt-3" role="alert">
+        {{ message }}
+    </div>
+    {% endfor %}
+</main>
+{% endblock %}

@@ -179,7 +179,7 @@
                             <p class="text-muted">Join our community of PC enthusiasts</p>
                         </div>
 
-                        <form action="/create_account" id="registerForm" method="post">
+                        <form action="/Create_Account" id="registerForm" method="post">
                             {{ form.hidden_tag() }}
                             <!-- NOT IMPLEMENTED
                             <div class="row">
@@ -201,6 +201,11 @@
                                 <label for="email" class="form-label">Email Address</label>
                                 {{ form.email(class="form-control", id="email") }}
                             </div>
+
+                            <div class="mb-3">
+                                <label for="dob" class="form-label">Date of Birth</label>
+                                {{ form.dob(class="form-control", id="dob", type="date") }}
+                            </div>
                             
                             <div class="mb-3">
                                 <label for="username" class="form-label">Username</label>
@@ -214,31 +219,29 @@
                                     <i class="bi bi-eye-slash"></i>
                                 </button>
                             </div>
-                            <!--
                             <div class="mb-3 password-container">
-                                <label for="confirmPassword" class="form-label">Confirm Password</label>
-                                <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                                <label for="confirmpassword" class="form-label">Confirm Password</label>
+                                <input type="password" class="form-control" id="confirmpassword" name="confirmpassword" required>
                                 <button type="button" class="password-toggle" id="toggleConfirmPassword">
                                     <i class="bi bi-eye-slash"></i>
                                 </button>
                             </div>
-                            -->
-                            <!--
+                        <!-- NOT IMPLEMENTED
                             <div class="mb-3 form-check">
                                 <input type="checkbox" class="form-check-input" id="newsletter" name="newsletter">
                                 <label class="form-check-label" for="newsletter">
                                     Subscribe to our newsletter for exclusive deals and updates
                                 </label>
                             </div>
-                            -->
-                            <!--
+                        -->
+                            <!-- NOT IMPLEMENTED
                             <div class="mb-3 form-check">
                                 <input type="checkbox" class="form-check-input" id="terms" name="terms" required>
                                 <label class="form-check-label" for="terms">
                                     I agree to the <a href="#" class="text-decoration-none">Terms of Service</a> and <a href="#" class="text-decoration-none">Privacy Policy</a>
                                 </label>
                             </div>
-                            -->
+                        -->
                             <div class="d-grid">
                                 {{ form.submit(class="btn btn-bd-primary btn-lg", id="submitButton") }}
                             </div>
@@ -325,59 +328,76 @@
 {% block scripts %}
     <!-- Registration Form Script -->
     <script>
-        // STILL BEING TESTED 
         // Password toggle functionality
         const togglePassword = document.querySelector('#togglePassword');
         const password = document.querySelector('#password');
         const eyeIcon = togglePassword.querySelector('i');
 
-        //const toggleConfirmPassword = document.querySelector('#toggleConfirmPassword');
-        //const confirmPassword = document.querySelector('#confirmPassword');
-        //const confirmEyeIcon = toggleConfirmPassword.querySelector('i');
+        const toggleConfirmPassword = document.querySelector('#toggleConfirmPassword');
+        const confirmPassword = document.querySelector('#confirmpassword');
+        const confirmEyeIcon = toggleConfirmPassword.querySelector('i');
+
+        // Create password match message element
+        const passwordMatchMessage = document.createElement('div');
+        passwordMatchMessage.className = 'alert alert-warning mt-2';
+        passwordMatchMessage.style.display = 'none';
+        // Insert after the confirm password container
+        confirmPassword.closest('.password-container').appendChild(passwordMatchMessage);
 
         togglePassword.addEventListener('click', function () {
-            // Toggle the password field type
             const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
             password.setAttribute('type', type);
-            
-            // Toggle the eye icon
             eyeIcon.classList.toggle('bi-eye');
             eyeIcon.classList.toggle('bi-eye-slash');
         });
 
         toggleConfirmPassword.addEventListener('click', function () {
-            // Toggle the confirm password field type
             const type = confirmPassword.getAttribute('type') === 'password' ? 'text' : 'password';
             confirmPassword.setAttribute('type', type);
-            
-            // Toggle the eye icon
             confirmEyeIcon.classList.toggle('bi-eye');
             confirmEyeIcon.classList.toggle('bi-eye-slash');
         });
 
-        // Form validation
-        //document.getElementById('registerForm').addEventListener('submit', function(e) {
-        //   e.preventDefault();
-        //    
-        //    const password = document.getElementById('password').value;
-        //   const confirmPassword = document.getElementById('confirmPassword').value;
-        //    
-        //    if (password !== confirmPassword) {
-        //       alert('Passwords do not match. Please try again.');
-        //        return;
-        //    }
-        //    
-        //    if (password.length < 8) {
-        //        alert('Password must be at least 8 characters long.');
-        //        return;
-        //    }
+        // Live password matching validation
+        function validatePasswordMatch() {
+            const passwordValue = password.value;
+            const confirmPasswordValue = confirmPassword.value;
             
-            // If validation passes, you would typically submit the form to a server
-            // For this example, we'll show a success message
-            // Future redirect
+            if (confirmPasswordValue === '') {
+                passwordMatchMessage.style.display = 'none';
+                confirmPassword.setCustomValidity('');
+                return;
+            }
+            
+            if (passwordValue !== confirmPasswordValue) {
+                passwordMatchMessage.textContent = 'Passwords do not match';
+                passwordMatchMessage.className = 'alert alert-warning mt-2';
+                passwordMatchMessage.style.display = 'block';
+                confirmPassword.setCustomValidity('Passwords do not match');
+            } else {
+                passwordMatchMessage.textContent = 'Passwords match!';
+                passwordMatchMessage.className = 'alert alert-success mt-2';
+                passwordMatchMessage.style.display = 'block';
+                confirmPassword.setCustomValidity('');
+            }
+        }
 
-            // window.location.href = 'account.html';
-        //});
+        // Add event listeners for live validation
+        password.addEventListener('input', validatePasswordMatch);
+        confirmPassword.addEventListener('input', validatePasswordMatch);
 
+        // Form submission validation
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            const passwordValue = password.value;
+            const confirmPasswordValue = confirmPassword.value;
+            
+            if (passwordValue !== confirmPasswordValue) {
+                e.preventDefault();
+                passwordMatchMessage.textContent = 'Please fix password mismatch before submitting';
+                passwordMatchMessage.className = 'alert alert-danger mt-2';
+                passwordMatchMessage.style.display = 'block';
+                confirmPassword.focus();
+            }
+        });
     </script>
 {% endblock %}

@@ -98,7 +98,7 @@
             {{ form.submit(class="btn btn-primary w-100 py-2", id="submitButton") }}
             
             <div class="text-center my-3">
-                <a href="#" class="text-decoration-none">Forgot password?</a>
+                <a href="{{ url_for('forgotpw') }}" class="text-decoration-none">Forgot password?</a>
             </div>
                         <!-- Flash messages -->
             {% for message in get_flashed_messages() %}
@@ -110,7 +110,7 @@
             
             <div class="text-center">
                 <p class="mb-2">Don't have an account?</p>
-                <a href="{{ url_for('Register') }}" class="btn btn-outline-primary w-100 py-2">
+                <a href="{{ url_for('create_account') }}" class="btn btn-outline-primary w-100 py-2">
                     Create Account
                 </a>
             </div>

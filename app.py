@@ -6,7 +6,7 @@ from argon2 import PasswordHasher       #pip install argon2-cffi
 from flask_wtf import FlaskForm         #pip install flask-wtf
 import os, string
 from sqlalchemy import Text
-from wtforms import StringField, SubmitField, EmailField
+from wtforms import StringField, SubmitField, EmailField, DateField
 from wtforms.validators import data_required, ValidationError
 from functools import wraps
 
@@ -24,6 +24,23 @@ passLen = 9
 passCase = 1
 passNum = 1
 passSpec = 1
+
+def create_admin_account():
+    if(UserCredentials.query.filter_by(user_Name='admin').first() is None):
+        # Admin Creds for debugging purposes.  <------------------------------------------------------------------------------------ Remove before release
+        adminPass = 'admin'  # Default password
+        # Hash the password (Argon2 will handle salting internally)
+        adminPassHash = generateHash(adminPass)
+        # Create and add the admin user
+        adminUser = UserCredentials(
+            user_ID=1,
+            user_Name='admin',
+            user_DOB = datetime(2000, 1, 1),
+            user_Email='admin@email.com',
+            pass_hash=adminPassHash  # Store only the hash
+        )
+        db.session.add(adminUser)
+        db.session.commit()
 
 # Password hash generator
 def generateHash(passw):
@@ -61,32 +78,32 @@ def stripChars(input: string, strip: string):
 
 # Custom WTForms validator to check password complexity 
 def validatePassword(form, field):
-    uppers = sum(1 for c in field.data if c.isupper())
-    digits = sum(1 for c in field.data if c.isdigit())
+    uppers = sum(1 for c in field.data if c.isupper()) # Count uppercase letters
+    digits = sum(1 for c in field.data if c.isdigit()) # Count digits
     specials = 0
     for c in field.data:
-        if ord(c) >= 32 and ord(c) <= 47:
+        if ord(c) >= 32 and ord(c) <= 47: #!"#$%&'()*+,-./
             specials += 1
-        elif ord(c) >= 58 and ord(c) <= 64:
+        elif ord(c) >= 58 and ord(c) <= 64: #:;<=>?@
             specials += 1
-        elif ord(c) >= 91 and ord(c) <= 96:
+        elif ord(c) >= 91 and ord(c) <= 96: #[\]^_`
             specials += 1
-        elif ord(c) >= 123 and ord(c) <= 126:
+        elif ord(c) >= 123 and ord(c) <= 126: #{|}~
             specials += 1
 # "raise ValidationError" is not working properly, so using flash messages for now
-    if len(field.data) < passLen:
+    if len(field.data) < passLen: # Check length
         print('len error')
         flash('Password must contian at least ' + str(passLen) + ' characters')
         raise ValidationError('Password must contian at least ' + str(passLen) + ' characters')
-    elif uppers < passCase:
+    elif uppers < passCase: # Check uppercase letters
         print('case error')
         flash('Password must contain at least ' + str(passCase) + ' upper-case character')
         raise ValidationError('Password must contain at least ' + str(passCase) + ' upper-case character')
-    elif digits < passNum:
+    elif digits < passNum: # Check digits
         print('num error')
         flash('Password must contain at least ' + str(passNum) + ' number')
         raise ValidationError('Password must contain at least ' + str(passNum) + ' number')
-    elif specials < passSpec:
+    elif specials < passSpec: # Check special characters
         print('spec error')
         flash('Password must contain at least ' + str(passSpec) + ' special character')
         raise ValidationError('Password must contain at least ' + str(passSpec) + ' special character')
@@ -111,16 +128,15 @@ def split_integer_at_rightmost_digit(input_integer):
 
     return left_of_rightmost_digit, rightmost_digit
 
-# Configure upload folders
+# NOT IMPLEMENTED YET Configure upload folders
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'Databases')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Ensure the Data model includes PCAP-specific fields (replace existing)
+# FOR REFERENCE Ensure the Data model includes PCAP-specific fields (replace existing)
 class network_Data(db.Model):
     ID = db.Column(db.Integer, primary_key=True)
     user_ID = db.Column(db.Integer, db.ForeignKey('user_credentials.user_ID'))
     pcap_filename = db.Column(db.String(100), nullable=False)   # e.g., "1.pcap"
-    #pcap_path = db.Column(db.String(200), nullable=False)   # e.g., ".../Databases/1/1/1.pcap"
     #final_path = db.Column(db.String(200))    # For extracted features e.g., ".../Databases/1/1/1_final.csv"
     results_path = db.Column(db.String(200)) #e.g, ".../Databases/1/1/1_results.csv"
     visualization = db.Column(db.Text) #e.g, ".../Databases/1/1/XGB_feat_importance.png"
@@ -131,13 +147,14 @@ class network_Data(db.Model):
     analysis_results = db.Column(db.Text)  # Stores JSON-serialized DataFrame
     upload_time = db.Column(db.DateTime, default=datetime.utcnow)
 
+
+
 # Creating a model for user credentials
 class  UserCredentials(db.Model):
     user_ID = db.Column(db.Integer, primary_key=True)
-    user_Name = db.Column(db.String(50),nullable=False)
+    user_Name = db.Column(db.String(50),nullable=False, unique=True)
+    user_DOB = db.Column(db.DateTime, nullable=True)
     user_Email = db.Column(db.String(60), nullable=False, unique=True)
-    #user_Phone = db.Column(db.Integer, unique=True)
-    #pass_salt = db.Column(db.Integer, nullable=False, unique=True)
     pass_hash = db.Column(db.String, nullable=False) #should be salted already
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
     network_data = db.relationship('network_Data', backref='userCred', lazy=True)
@@ -146,7 +163,7 @@ class  UserCredentials(db.Model):
 class RegisterForm (FlaskForm):
     username = StringField("Username: ", validators=[data_required()])
     email = EmailField("Email: ", validators=[data_required()])
-    #phone = TelField("Phone: ")
+    dob = DateField("Date of Birth: ", format='%Y-%m-%d', validators=[data_required()])
     password = StringField("Password: ", validators=[data_required(), validatePassword])
     submit = SubmitField("Create Account")
     
@@ -156,6 +173,12 @@ class LoginForm (FlaskForm):
     password = StringField("Password: ", validators=[data_required()])
     submit = SubmitField("Sign in")
 
+# Create a forgotpw form class
+class ForgotpwForm (FlaskForm):
+    username = StringField("Username or Email: ", validators=[data_required()])
+    newpassword = StringField("New Password: ", validators=[data_required(), validatePassword])  # ADD validatePassword
+    submit = SubmitField("Reset Password")  # Change button text
+
 #Creates a context to manage the database
 with app.app_context():
     #Drops all tables from the database
@@ -163,6 +186,9 @@ with app.app_context():
 
     #Adds tables out of all the modles in the database, unless they already exist
     db.create_all()
+
+    # Create default admin account
+    create_admin_account()
 
     #LoginCredentials.__table__.create(db.engine)
 
@@ -180,21 +206,6 @@ def log_in():
         flash("You are already logged in.")
         return redirect(url_for('homepage'))
     else:
-        if(UserCredentials.query.filter_by(user_Name='admin').first() is None):
-            # Admin Creds for debugging purposes.  <------------------------------------------------------------------------------------ Remove before release
-            adminPass = 'admin'  # Default password (change this before release)
-            # Hash the password (Argon2 will handle salting internally)
-            adminPassHash = generateHash(adminPass)
-            # Create and add the admin user
-            adminUser = UserCredentials(
-                user_ID=1,
-                user_Name='admin',
-                user_Email='admin@email.com',
-                pass_hash=adminPassHash  # Store only the hash
-            )
-            db.session.add(adminUser)
-            db.session.commit()
-
         # Initializes values to None 
         username = None
         password = None
@@ -215,13 +226,14 @@ def log_in():
                 try: 
                     if form.password.data.lower() == "'or 1 = 1":
                         flash("Nice Try.")
-                        return render_template('log_in.html', form=form, username = username, passHash = passHash) #salt = salt
+                        return render_template('log_in.html', form=form, username = username, passHash = passHash)
                     ph = PasswordHasher()
                     if ph.verify(user.pass_hash, form.password.data):
                         session['username'] = user.user_Name
                         session['user_id'] = user.user_ID
-                        session['user_authenticated'] = None
+                        #session['user_authenticated'] = None
                         #session['delete_account_confirmed'] = None
+                        flash("Welcome, " + session.get('username') + "!")
                         return redirect(url_for('homepage'))
                 except:
                     flash("Error: the information you entered does not match our records")
@@ -237,154 +249,198 @@ def log_in():
             form.username.data = ''
             password = form.password.data
             form.password.data = ''
-            session['user_authenticated'] = None
+            #session['user_authenticated'] = None
             #session['delete_account_confirmed'] = None
         # Re-rendering the login page after a failed login attempt
-        return render_template('log_in.html', form=form, username = username, passHash = passHash) #salt = salt
+        return render_template('log_in.html', form=form, username = username, passHash = passHash)
 
 #======================= Create_Account =======================#
-@app.route('/create_account',  methods=['POST', 'GET'])
-def Register():
+@app.route('/Create_Account',  methods=['POST', 'GET'])
+def create_account():
     if session.get('username'):
         flash("You are already logged in.")
         return redirect(url_for('homepage'))
-    username = None
-    email = None
-    #phone = None
-    password = None
-    passHash = None
-    form = RegisterForm()
-
-    # Checks if the submit button has been pressed
-    if form.validate_on_submit():
-        # Check if username already exists
-        existing_username = UserCredentials.query.filter_by(user_Name=form.username.data).first()
-        # Queries the database to see if the email already exists in the database
-        user = UserCredentials.query.filter_by(user_Email=form.email.data).first()
-        if existing_username is None:
-            if user is None:
-                passHash = generateHash(form.password.data) #, salt
-                # A database object is created with the user's information
-                user = UserCredentials(user_Name = form.username.data, user_Email = form.email.data, pass_hash = passHash) #pass_salt = salt
-                session['username'] = user.user_Name                
-                
-                # The newly created user object is added to a database session, and committed as an entry to the user_credentials table
-                db.session.add(user)
-                db.session.commit()
-                session['user_id'] = (UserCredentials.query.filter_by(user_Name = form.username.data).first()).user_ID
-
-                # The user is logged in and redirected to the homepage
-                session['user_authenticated'] = None
-                #session['delete_account_confirmed'] = None
-                return redirect(url_for('homepage'))
-            
-            # If the email that was entered is associated with an existing user account, the user is instead brought back to the registration page
-            else:
-                flash("Error: Email already in use.")
-        else:
-            flash("Error: Username already in use.")
-
-        #Clearing the form data after it has been submitted
-        username = form.username.data
-        form.username.data = ''
-        email = form.email.data
-        form.email.data = ''
-        password = form.password.data
-        form.password.data = ''
-
-     # Re-rendering the account creation page after an unsuccessful submission
-    session['user_authenticated'] = None
-    #session['delete_account_confirmed'] = None
-    return render_template('create_acct.html', form=form, username = username, email = email, passHash = passHash) #, salt = salt
-
-#======================= (NOT IMPLEMENTED) Forgot_Password =======================#
-@app.route('/Forgot_Password')
-def forgotpw():
-    if session.get('username'):
-        return redirect(url_for('homepage'))
-    else:
-        # Initializes values to None 
+    else: 
         username = None
+        dob = None
+        email = None
         password = None
         passHash = None
-        #salt = None
-        # Specifies the form class to use
-        form = LoginForm()
+        form = RegisterForm()
+        # Checks if the submit button has been pressed
+        # Add this debug print to see what's in the form data
+        if form.is_submitted():
+            print('Form submitted')
+            print(f'Form errors: {form.errors}')
+            print(f'Username data: {form.username.data}')
+            print(f'Email data: {form.email.data}')
+            print(f'DOB data: {form.dob.data}')
+            print(f'Password data: {form.password.data}')
 
-        #Checks if the submit button has been pressed
         if form.validate_on_submit():
-            # Queries the database to see if the username exists
-            user = UserCredentials.query.filter_by(user_Name=form.username.data).first()
-            # if user exists
-            if user is not None:
-                # The salt and hash associated with the user's profile are taken from the database
-                #salt = user.pass_salt
-                userHash = user.pass_hash
-                # A new hash is generated with the password entered into the login form, using the same salt that is within the database
-                passHash = generateHash(form.password.data) #, salt
-                # The newly generated hash is compared to the hash within the database
-                if passHash == userHash:
-                    session['username'] = user.user_Name
-                    session['user_id'] = user.user_ID
-                    session['user_authenticated'] = None
-                    session['delete_account_confirmed'] = None
-                    # If the hashes matched, the user is logged in and redirected to the home page
+            print('form validated')
+            # Check if username already exists
+            existing_username = UserCredentials.query.filter_by(user_Name=form.username.data).first()
+            # Queries the database to see if the email already exists in the database
+            existing_email = UserCredentials.query.filter_by(user_Email=form.email.data).first()
+            if existing_username is None:
+                print('username is available')
+                if existing_email is None:
+                    print('email is available as well')
+                    passHash = generateHash(form.password.data)
+                    # A database object is created with the user's information
+                    user = UserCredentials(user_Name = form.username.data, user_DOB = form.dob.data, user_Email = form.email.data, pass_hash = passHash)
+                    session['username'] = user.user_Name   
+                    # The newly created user object is added to a database session, and committed as an entry to the user_credentials table
+                    db.session.add(user)
+                    db.session.commit()
+                    session['user_id'] = (UserCredentials.query.filter_by(user_Name = form.username.data).first()).user_ID
+
+                    # The user is logged in and redirected to the homepage
+                    #session['user_authenticated'] = None
+                    #session['delete_account_confirmed'] = None
+                    flash("Account created successfully! Welcome, " + session.get('username') + "!")
                     return redirect(url_for('homepage'))
-                #Otherwise, the user is not redirected and the form is cleared
+                
+                # If the email that was entered is associated with an existing user account, the user is instead brought back to the registration page
                 else:
-                    #SQL injection easter egg
-                    if form.password.data.lower() == "'or 1 = 1":
-                        flash("Nice try.")
-                    else:
-                        flash("Error: the information you entered does not match our records.")
+                    flash("Error: Email already in use.")
             else:
-                if form.password.data.lower() == "'or 1 = 1":
-                        flash("Nice try.")
-                else:
-                    flash("Error: the information you entered does not match our records.")
+                flash("Error: Username already in use.")
 
             #Clearing the form data after it has been submitted
             username = form.username.data
             form.username.data = ''
+            dob = form.dob.data
+            form.dob.data = ''
+            email = form.email.data
+            form.email.data = ''
             password = form.password.data
             form.password.data = ''
-        # Re-rendering the login page after a failed login attempt
-        session['user_authenticated'] = None
-        session['delete_account_confirmed'] = None
-        return render_template('forgotpw.html', form=form, username = username, passHash = passHash) #, salt = salt
+
+        # Re-rendering the account creation page after an unsuccessful submission
+        #session['user_authenticated'] = None
+        #session['delete_account_confirmed'] = None
+        return render_template('create_acct.html', form=form, username = username, dob = dob, email = email, passHash = passHash)
+
+#======================= Forgot_Password =======================#
+@app.route('/Forgot_Password', methods=['POST', 'GET'])  # ADD methods parameter
+def forgotpw():
+    if session.get('username'):
+        flash("You are already logged in.")
+        return redirect(url_for('homepage'))
+    else:
+        # Initializes values to None 
+        username = None
+        newpassword = None
+        passHash = None
+        form = ForgotpwForm()
+
+        #Checks if the submit button has been pressed
+        if form.validate_on_submit():
+            # Try to find user by username OR email
+            user = UserCredentials.query.filter((UserCredentials.user_Name == form.username.data) | (UserCredentials.user_Email == form.username.data)).first()
+            if user:
+                try: 
+                    # SQL injection easter egg check
+                    if form.newpassword.data.lower() == "'or 1 = 1":
+                        flash("Nice Try.")
+                        return render_template('forgotpw.html', form=form, username=username, passHash=passHash)
+
+                    # Generate new password hash
+                    passHash = generateHash(form.newpassword.data)
+                    
+                    # UPDATE the existing user's password instead of creating a new user
+                    user.pass_hash = passHash
+                    db.session.commit()
+                    
+                    flash("Password reset successfully! Please log in with your new password.")
+                    return redirect(url_for('log_in'))
+
+                except Exception as e:
+                    print(f"Error during password reset: {e}")
+                    flash("Error: Could not reset password. Please try again.")
+
+            else:
+                if form.newpassword.data.lower() == "'or 1 = 1":
+                    flash("Nice try.")
+                else:
+                    flash("Error: User does not exist. Please check your username or email.")
+
+            #Clearing the form data after it has been submitted
+            username = form.username.data
+            form.username.data = ''
+            newpassword = form.newpassword.data
+            form.newpassword.data = ''
+
+        return render_template('forgotpw.html', form=form, username=username, passHash=passHash)
+
 
 #======================= Homepage =======================#
 @app.route('/Homepage')
 def homepage():
     if session.get('username'):
-        session['user_authenticated'] = None
+        #session['user_authenticated'] = None
         #session['delete_account_confirmed'] = None
-        flash("Welcome, " + session.get('username') + "!")
         return render_template('homepage.html')
     else:
         flash("Please log in to access the homepage.")
         return redirect(url_for('log_in'))
     
-""" #======================= Test =======================#
-@app.route('/test')
-def test():
-    return render_template('index2.html')
-
-#======================= Test =======================#
-@app.route('/test2')
-def log_in2():
-    return render_template('log_in2.html')
-
-#======================= Test =======================#
-@app.route('/test3')
-def test3():
-    return render_template('create_acct2.html') """
+#======================= Parts =======================#
+@app.route('/Homepage/Parts')
+def parts():
+    if session.get('username'):
+        #session['user_authenticated'] = None
+        #session['delete_account_confirmed'] = None
+        flash("Welcome, " + session.get('username') + "! This page is currently under development!")
+        return render_template('parts.html')
+    else:
+        flash("Please log in to access our parts.")
+        return redirect(url_for('log_in'))
+    
+#======================= Cart =======================#
+@app.route('/Homepage/Cart')
+def cart():
+    if session.get('username'):
+        #session['user_authenticated'] = None
+        #session['delete_account_confirmed'] = None
+        flash("Welcome, " + session.get('username') + "! This page is currently under development!")
+        return render_template('cart.html')
+    else:
+        flash("Please log in to access your cart.")
+        return redirect(url_for('log_in'))
+    
+#======================= Orders =======================#
+@app.route('/Homepage/Orders')
+def orders():
+    if session.get('username'):
+        #session['user_authenticated'] = None
+        #session['delete_account_confirmed'] = None
+        flash("Welcome, " + session.get('username') + "! This page is currently under development!")
+        return render_template('orders.html')
+    else:
+        flash("Please log in to access your orders.")
+        return redirect(url_for('log_in'))
+    
+#======================= Account =======================#
+@app.route('/Homepage/Account')
+def account():
+    if session.get('username'):
+        #session['user_authenticated'] = None
+        #session['delete_account_confirmed'] = None
+        flash("Welcome, " + session.get('username') + "! This page is currently under development!")
+        return render_template('account.html')
+    else:
+        flash("Please log in to access your account.")
+        return redirect(url_for('log_in'))
 
 #======================= Logout =======================#
 @app.route('/logout')
 def log_out():
     if session.get('username'):
         session.pop('username')
+        flash("You have been logged out.")
     return redirect(url_for('log_in'))
 
 if __name__ == '__main__':

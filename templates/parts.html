@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}Parts - PC Parts Store{% endblock %}
+
+{% block head %}
+{% endblock %}
+
+{% block body %}
+<main>
+    <!-- Was thinking that this page should be the same for all the parts, whether clicked on CPU, RAM, GPU, etc. Just has to be a dynamic page-->
+    <!-- Flash messages -->
+     
+    {% for message in get_flashed_messages() %}
+    <div class="alert alert-warning mt-3" role="alert">
+        {{ message }}
+    </div>
+    {% endfor %}
+</main>
+{% endblock %}
