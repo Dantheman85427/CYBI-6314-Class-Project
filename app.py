@@ -47,35 +47,6 @@ def generateHash(passw):
     ph = PasswordHasher()
     return ph.hash(passw) #automatically stores the salt with the hash
 
-# NOT IMPLEMENTED YET
-def requires_confirmation(route):
-    def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            if route == 'delete_account_confirm':
-                if not session.get('delete_account_confirmed'):
-                    flash("Please confirm information to delete your account.")
-                    return redirect(url_for('settings_delete_confirm'))
-            else: 
-                if not session.get('user_authenticated'):
-                    flash("Please confirm information in order to access this page.")
-                    return redirect(url_for('settings_confirm'))  # Change 'login' to your login route
-                # Check if the route is the delete account confirmation
-            return func(*args, **kwargs)
-        return wrapper
-    return decorator
-
-# NOT IMPLEMENTED YET Function to strip multiple characters from a string
-def stripChars(input: string, strip: string):
-    begStr = str(input)
-    chars = str(strip)
-
-    for ch in chars:
-        if ch in begStr:
-            begStr = begStr.replace(ch, '')
-            
-    return begStr
-
 # Custom WTForms validator to check password complexity 
 def validatePassword(form, field):
     uppers = sum(1 for c in field.data if c.isupper()) # Count uppercase letters
@@ -107,47 +78,6 @@ def validatePassword(form, field):
         print('spec error')
         flash('Password must contain at least ' + str(passSpec) + ' special character')
         raise ValidationError('Password must contain at least ' + str(passSpec) + ' special character')
-    
-# NOT IMPLEMENTED YET
-def split_integer_at_rightmost_digit(input_integer):
-    # Convert the integer to a string
-    input_str = str(input_integer)
-
-    # Extract the rightmost digit
-    rightmost_digit = int(input_str[-1])
-
-    # Extract everything to the left of the rightmost digit
-    left_of_rightmost_digit_str = input_str[:-1]
-
-    # Check if the string is not empty before converting to int
-    if left_of_rightmost_digit_str:
-        left_of_rightmost_digit = int(left_of_rightmost_digit_str)
-    else:
-        # Handle the case when the string is empty
-        left_of_rightmost_digit = 0  # or any default value you prefer
-
-    return left_of_rightmost_digit, rightmost_digit
-
-# NOT IMPLEMENTED YET Configure upload folders
-UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'Databases')
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-# FOR REFERENCE Ensure the Data model includes PCAP-specific fields (replace existing)
-class network_Data(db.Model):
-    ID = db.Column(db.Integer, primary_key=True)
-    user_ID = db.Column(db.Integer, db.ForeignKey('user_credentials.user_ID'))
-    pcap_filename = db.Column(db.String(100), nullable=False)   # e.g., "1.pcap"
-    #final_path = db.Column(db.String(200))    # For extracted features e.g., ".../Databases/1/1/1_final.csv"
-    results_path = db.Column(db.String(200)) #e.g, ".../Databases/1/1/1_results.csv"
-    visualization = db.Column(db.Text) #e.g, ".../Databases/1/1/XGB_feat_importance.png"
-    threat_type = db.Column(db.String(50)) # e.g., "BENIGN", "MALWARE", "DOS", etc.
-    accuracy = db.Column(db.Float)
-    malicious_records = db.Column(db.Integer) # Count of malicious flows
-    total_flows = db.Column(db.Integer)     # Total flows analyzed
-    analysis_results = db.Column(db.Text)  # Stores JSON-serialized DataFrame
-    upload_time = db.Column(db.DateTime, default=datetime.utcnow)
-
-
 
 # Creating a model for user credentials
 class  UserCredentials(db.Model):
@@ -213,12 +143,9 @@ def log_in():
         # Specifies the form class to use
         form = LoginForm()
 
-        #Checks if the submit button has been pressed
+        # Checks if the submit button has been pressed
         if form.validate_on_submit():
-            # Queries the database to see if the username exists
-            #user = UserCredentials.query.filter_by(user_Name=form.username.data).first()
-
-                        # Try to find user by username OR email
+            # Try to find user by username OR email
             user = UserCredentials.query.filter((UserCredentials.user_Name == form.username.data) | (UserCredentials.user_Email == form.username.data)).first()
             # if user exists
             if user:
@@ -231,8 +158,6 @@ def log_in():
                     if ph.verify(user.pass_hash, form.password.data):
                         session['username'] = user.user_Name
                         session['user_id'] = user.user_ID
-                        #session['user_authenticated'] = None
-                        #session['delete_account_confirmed'] = None
                         flash("Welcome, " + session.get('username') + "!")
                         return redirect(url_for('homepage'))
                 except:
@@ -249,8 +174,6 @@ def log_in():
             form.username.data = ''
             password = form.password.data
             form.password.data = ''
-            #session['user_authenticated'] = None
-            #session['delete_account_confirmed'] = None
         # Re-rendering the login page after a failed login attempt
         return render_template('log_in.html', form=form, username = username, passHash = passHash)
 
@@ -297,8 +220,6 @@ def create_account():
                     session['user_id'] = (UserCredentials.query.filter_by(user_Name = form.username.data).first()).user_ID
 
                     # The user is logged in and redirected to the homepage
-                    #session['user_authenticated'] = None
-                    #session['delete_account_confirmed'] = None
                     flash("Account created successfully! Welcome, " + session.get('username') + "!")
                     return redirect(url_for('homepage'))
                 
@@ -319,8 +240,6 @@ def create_account():
             form.password.data = ''
 
         # Re-rendering the account creation page after an unsuccessful submission
-        #session['user_authenticated'] = None
-        #session['delete_account_confirmed'] = None
         return render_template('create_acct.html', form=form, username = username, dob = dob, email = email, passHash = passHash)
 
 #======================= Forgot_Password =======================#
@@ -380,8 +299,6 @@ def forgotpw():
 @app.route('/Homepage')
 def homepage():
     if session.get('username'):
-        #session['user_authenticated'] = None
-        #session['delete_account_confirmed'] = None
         return render_template('homepage.html')
     else:
         flash("Please log in to access the homepage.")
@@ -391,8 +308,6 @@ def homepage():
 @app.route('/Homepage/Parts')
 def parts():
     if session.get('username'):
-        #session['user_authenticated'] = None
-        #session['delete_account_confirmed'] = None
         flash("Welcome, " + session.get('username') + "! This page is currently under development!")
         return render_template('parts.html')
     else:
@@ -403,8 +318,6 @@ def parts():
 @app.route('/Homepage/Cart')
 def cart():
     if session.get('username'):
-        #session['user_authenticated'] = None
-        #session['delete_account_confirmed'] = None
         flash("Welcome, " + session.get('username') + "! This page is currently under development!")
         return render_template('cart.html')
     else:
@@ -415,8 +328,6 @@ def cart():
 @app.route('/Homepage/Orders')
 def orders():
     if session.get('username'):
-        #session['user_authenticated'] = None
-        #session['delete_account_confirmed'] = None
         flash("Welcome, " + session.get('username') + "! This page is currently under development!")
         return render_template('orders.html')
     else:
@@ -427,8 +338,6 @@ def orders():
 @app.route('/Homepage/Account')
 def account():
     if session.get('username'):
-        #session['user_authenticated'] = None
-        #session['delete_account_confirmed'] = None
         flash("Welcome, " + session.get('username') + "! This page is currently under development!")
         return render_template('account.html')
     else:
