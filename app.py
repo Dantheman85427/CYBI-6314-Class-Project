@@ -87,7 +87,7 @@ class  UserCredentials(db.Model):
     user_Email = db.Column(db.String(60), nullable=False, unique=True)
     pass_hash = db.Column(db.String, nullable=False) #should be salted already
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
-    network_data = db.relationship('network_Data', backref='userCred', lazy=True)
+    ## network_data = db.relationship('network_Data', backref='userCred', lazy=True)
 
 # Create a registration form class
 class RegisterForm (FlaskForm):
