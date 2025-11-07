@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin - PC Parts Store{% endblock %}
+
+{% block body %}
+<main>
+    <h1>Admin Dashboard</h1>
+    <!-- Flash messages -->
+    {% for message in get_flashed_messages() %}
+    <div class="alert alert-warning mt-3" role="alert">
+        {{ message }}
+    </div>
+    {% endfor %}
+    <!-- User Section -->
+    <div class="section">
+        <!-- User Role Update Form-->
+        <div class="form-section">
+            <h4>Update User Role</h4>
+            <form action="/Homepage/Admin" method="post">
+                {{ user_form.hidden_tag() }}
+                <label for="user_id">User ID:</label>
+                {{ user_form.user_id(class="form-control", id="user_id") }}
+                <label for="new_role">New Role:</label>
+                {{ user_form.new_role(class="form-control", id="new_role") }}
+                {{ user_form.submit(class="btn btn-primary") }}
+            </form>
+        </div>
+        <!-- Users Table -->
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Role</th>
+                        <th scope="col">Username</th>
+                        <th scope="col">DOB</th>
+                        <th scope="col">Address</th>
+                        <th scope="col">City</th>
+                        <th scope="col">State</th>
+                        <th scope="col">Zipcode</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Date Added</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <th scope="row">{{ user.user_ID }}</th>
+                        <td>
+                            <span class="badge {% if user.user_Role == 'root_admin' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                {{ user.user_Role }}
+                            </span>
+                        </td>
+                        <td>{{ user.user_Name }}</td>
+                        <td>{{ user.user_DOB.strftime('%Y-%m-%d') if user.user_DOB else 'N/A' }}</td>
+                        <td>{{ user.user_Address or 'N/A' }}</td>
+                        <td>{{ user.user_City or 'N/A' }}</td>
+                        <td>{{ user.user_State or 'N/A' }}</td>
+                        <td>{{ user.user_Zip or 'N/A' }}</td>
+                        <td>{{ user.user_Email }}</td>
+                        <td>{{ user.date_added.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            {% if user.user_Name != 'admin' %}
+                            <form action="/Homepage/Admin" method="post" class="d-inline">
+                                {{ delete_form.hidden_tag() }}
+                                <input type="hidden" name="delete_user" value="{{ user.user_ID }}">
+                                <button type="submit" class="btn btn-danger btn-sm" 
+                                        onclick="return confirm('Are you sure you want to delete user {{ user.user_Name }}?')">
+                                    Delete
+                                </button>
+                            </form>
+                            {% else %}
+                            <span class="text-muted">Protected</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!-- Products Section -->
+    <div>
+        <h2>Product Management</h2>
+        
+        <!-- Product Form -->
+        <div>
+            <h4>{{ 'Edit Product' if product_form.product_id.data else 'Add New Product' }}</h4>
+            <form action="/Homepage/Admin" method="post" enctype="multipart/form-data">
+                {{ product_form.hidden_tag() }}
+                {% if product_form.product_id.data %}
+                <input type="hidden" name="product_id" value="{{ product_form.product_id.data }}">
+                {% endif %}
+                <label for="product_name" class="form-label">Product Name:</label>
+                {{ product_form.product_name(class="form-control", id="product_name") }}
+                <label for="product_brand" class="form-label">Product Brand:</label>
+                {{ product_form.product_brand(class="form-control", id="product_brand") }}
+                <label for="product_type" class="form-label">Product Type:</label>
+                {{ product_form.product_type(class="form-control", id="product_type") }}
+                <label for="product_price" class="form-label">Product Price:</label>
+                {{ product_form.product_price(class="form-control", id="product_price", step="0.01") }}
+                <label for="product_stock" class="form-label">Product Stock:</label>
+                {{ product_form.product_stock(class="form-control", id="product_stock") }}
+                <label for="product_image" class="form-label">Product Image URL:</label>
+                {{ product_form.product_image(class="form-control", id="product_image", placeholder="Enter image URL or leave empty for default") }}
+                <label for="product_description" class="form-label">Product Description:</label>
+                {{ product_form.product_description(class="form-control", id="product_description", rows="3") }}
+                {% if product_form.product_id.data %}
+                {{ product_form.update(class="btn btn-warning") }}
+                <a href="{{ url_for('admin') }}" class="btn btn-secondary">Cancel</a>
+                {% else %}
+                {{ product_form.submit(class="btn btn-success") }}
+                {% endif %}
+            </form>
+        </div>
+
+        <!-- Products Table -->
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Brand</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Description</th>
+                        <th scope="col">Stock</th>
+                        <th scope="col">Price</th>
+                        <th scope="col">Image</th>
+                        <th scope="col">Date Added</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                    <tr>
+                        <th scope="row">{{ product.product_ID }}</th>
+                        <td>{{ product.product_Name }}</td>
+                        <td>{{ product.product_Brand }}</td>
+                        <td>
+                            <span class="badge bg-info">{{ product.product_Type }}</span>
+                        </td>
+                        <td>
+                            <small>{{ product.product_Description[:50] }}{% if product.product_Description|length > 50 %}...{% endif %}</small>
+                        </td>
+                        <td>
+                            <span class="badge {% if product.product_Stock > 10 %}bg-success{% elif product.product_Stock > 0 %}bg-warning{% else %}bg-danger{% endif %}">
+                                {{ product.product_Stock }}
+                            </span>
+                        </td>
+                        <td>${{ "%.2f"|format(product.product_Price) }}</td>
+                        <td>
+                            {% if product.product_Image %}
+                            <small>{{ product.product_Image }}</small>
+                            {% else %}
+                            <span class="text-muted">Default</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ product.product_Added.strftime('%Y-%m-%d') }}</td>
+                        <td class="action-buttons">
+                            <a href="{{ url_for('admin', edit_product=product.product_ID) }}" 
+                               class="btn btn-primary btn-sm">Edit</a>
+                            <form action="/Homepage/Admin" method="post" class="d-inline">
+                                {{ delete_form.hidden_tag() }}
+                                <input type="hidden" name="delete_product" value="{{ product.product_ID }}">
+                                <button type="submit" class="btn btn-danger btn-sm" 
+                                        onclick="return confirm('Are you sure you want to delete product {{ product.product_Name }}?')">
+                                    Delete
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+{% endblock %}
