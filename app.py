@@ -6,17 +6,20 @@ from argon2 import PasswordHasher       #pip install argon2-cffi
 from flask_wtf import FlaskForm         #pip install flask-wtf
 import os, string
 from sqlalchemy import Text
-from wtforms import StringField, SubmitField, EmailField, DateField, IntegerField, FloatField, TextAreaField, SelectField
+from wtforms import StringField, SubmitField, EmailField, DateField, IntegerField, FloatField, TextAreaField, SelectField, FileField
 from wtforms.validators import data_required, ValidationError, Optional
 from functools import wraps
 from werkzeug.utils import secure_filename
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'insecurePassword'
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'fallback-insecure-key-change-in-production')
 
 #Configuring the Database location
-app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{Path(__file__).parent / './Databases/userAccounts.db'}"
-app.config['UPLOAD_FOLDER'] = 'static/uploads/'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', f"sqlite:///{Path(__file__).parent / './Databases/userAccounts.db'}")
+app.config['UPLOAD_FOLDER'] = 'static/images/'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB limit
 
 #Initialize the database
@@ -31,9 +34,17 @@ passSpec = 1
 def create_admin_account():
     if(UserCredentials.query.filter_by(user_Name='admin').first() is None):
         # Admin Creds for debugging purposes.  <------------------------------------------------------------------------------------ Remove before release
-        adminPass = 'admin'  # Default password
+        admin_password = os.getenv('ADMIN_PASSWORD')
+        if not admin_password:
+            # Generate a random password if not set in your environment
+            import secrets
+            admin_password = secrets.token_urlsafe(16)
+            print(f"ADMIN_PASSWORD not set in .env file!")
+            print(f"Generated random admin password: {admin_password}")
+            print(f"Please add ADMIN_PASSWORD {admin_password} to your .env file")
+
         # Hash the password (Argon2 will handle salting internally)
-        adminPassHash = generateHash(adminPass)
+        adminPassHash = generateHash(admin_password)
         # Create and add the admin user
         adminUser = UserCredentials(
             user_ID=1,
@@ -167,14 +178,16 @@ class ForgotpwForm (FlaskForm):
     submit = SubmitField("Reset Password")  # Change button text
 
 class AccountForm (FlaskForm):
-    new_username = StringField("New Username:", validators=[data_required()])
-    new_email = EmailField("New Email: ", validators=[data_required()])
-    new_address = StringField("New Address: ", validators=[data_required()])
-    new_city = StringField("New City: ", validators=[data_required()])
-    new_state = StringField("New State: ", validators=[data_required()])
-    new_zip = StringField("New Zip Code: ", validators=[data_required()])
-    new_password = StringField("New Password: ")
-    submit = SubmitField("Apply")
+    userid = IntegerField("User ID", validators=[Optional()])  # For editing existing users
+    username = StringField("Username:", validators=[data_required()])
+    email = EmailField("Email: ", validators=[data_required()])
+    address = StringField("Address: ", validators=[data_required()])
+    city = StringField("City: ", validators=[data_required()])
+    state = StringField("State: ", validators=[data_required()])
+    zip = StringField("Zip Code: ", validators=[data_required()])
+    password = StringField("Password: ", validators=[Optional(), validatePassword])
+    submit = SubmitField("Update Account")
+    update = SubmitField("Update Account")  # For when editing
 
 class AccountFormConfirm (FlaskForm):
     username = StringField("Confirm Username: ", validators=[data_required()])
@@ -207,7 +220,7 @@ class AdminProductForm (FlaskForm):
     product_description = TextAreaField("Product Description", validators=[data_required()])
     product_stock = IntegerField("Product Stock", validators=[data_required()])
     product_price = FloatField("Product Price", validators=[data_required()])
-    product_image = StringField("Product Image URL", validators=[Optional()])
+    product_image = FileField("Product Image", validators=[Optional()])
     submit = SubmitField("Add Product")
     update = SubmitField("Update Product")
 
@@ -324,7 +337,6 @@ def create_account():
                     # A database object is created with the user's information
                     user = UserCredentials(user_Name = form.username.data, user_DOB = form.dob.data, user_Address = form.address.data, user_City = form.city.data, user_State = form.state.data, user_Zip = form.zip.data, user_Email = form.email.data, pass_hash = passHash)
                     session['username'] = user.user_Name  
-                    session['user_role'] = user.user_Role
                     # The newly created user object is added to a database session, and committed as an entry to the user_credentials table
                     db.session.add(user)
                     db.session.commit()
@@ -439,10 +451,75 @@ def orders():
     return render_template('orders.html')
     
 #======================= Account =======================#
-@app.route('/Homepage/Account')
+@app.route('/Homepage/Account', methods=['POST', 'GET'])
 @logged_in_required()
 def account():
-    return render_template('account.html')
+    form = AccountForm()
+    delete_form = DeleteForm()
+
+    current_user = UserCredentials.query.filter_by(user_Name = session.get('username')).first()
+    # Handle Edit Product Request
+    if 'edit_account' in request.args:
+        user_id = request.args.get('edit_account')
+        user = UserCredentials.query.filter_by(user_ID = user_id).first()
+        if user and user.user_ID == current_user.user_ID: # User can only delete their own account
+            form = AccountForm(
+                userid = user.user_ID,
+                username = user.user_Name,
+                email = user.user_Email,
+                address = user.user_Address or '',
+                city = user.user_City or '',
+                state = user.user_State or '',
+                zip = user.user_Zip or ''
+            )
+
+    if form.validate_on_submit():
+        # Checking if new username or email exists (excluding current user)
+        existing_username = UserCredentials.query.filter(UserCredentials.user_Name == form.username.data, UserCredentials.user_ID != current_user.user_ID).first()
+        existing_email = UserCredentials.query.filter(UserCredentials.user_Email == form.email.data, UserCredentials.user_ID != current_user.user_ID).first()
+        if existing_username is None:
+            if existing_email is None:
+
+                current_user.user_Name = form.username.data
+                current_user.user_Email = form.email.data
+                current_user.user_Address = form.address.data
+                current_user.user_City = form.city.data
+                current_user.user_State = form.state.data
+                current_user.user_Zip = form.zip.data
+
+                if form.password.data:
+                    current_user.pass_hash = generateHash(form.password.data)
+
+                db.session.commit()
+                session['username'] = current_user.user_Name
+                session['user_id'] = current_user.user_ID
+                flash("Account information updated successfully.")
+
+                return redirect(url_for('account'))
+
+            else: 
+                flash("Error: Email already in use.")
+        else: 
+            flash("Error: Username already in use.")
+
+    # Handle Delete Operations
+    if delete_form.validate_on_submit() and 'delete_user' in request.form:
+        user_id = request.form.get('delete_user')
+        user = UserCredentials.query.filter_by(user_ID = user_id).first()
+        if user and user.user_ID == current_user.user_ID:
+            if user.user_Role == 'root_admin':
+                flash("Cannot delete root admin account.")
+            else:
+                db.session.delete(user)
+                db.session.commit()
+                session.pop('username', None)
+                session.pop('user_id', None)
+                flash(f"You have successfully deleted your account, '{user.user_Name}'.")
+                return redirect(url_for('log_in'))
+        else:
+            flash("Error: User not found.")
+
+    return render_template('account.html', user = current_user, form = form, delete_form = delete_form)
 
 #======================= Admin =======================#
 @app.route('/Homepage/Admin', methods=['POST', 'GET'])
@@ -476,14 +553,24 @@ def admin():
 
     # Handle Product Operations
     if product_form.submit.data and product_form.validate():  # Add new product
+        if product_form.product_image.data:
+            os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True) # Confirm folder exists
+            product_path = os.path.join(app.config['UPLOAD_FOLDER'], product_form.product_type.data) # Make subfolder by type like CPU, GPU etc.
+            os.makedirs(product_path, exist_ok=True)
+            filename = secure_filename(product_form.product_image.data.filename) # Sanitize filename
+            filepath = os.path.join(product_path, filename) # Full path/filename
+            product_form.product_image.data.save(filepath)
+        else: 
+            os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True) # Confirm folder exists
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], 'default_product.png')
         product = Products(
-            product_Name=product_form.product_name.data,
-            product_Brand=product_form.product_brand.data,
-            product_Type=product_form.product_type.data,
-            product_Description=product_form.product_description.data,
-            product_Stock=product_form.product_stock.data,
-            product_Price=product_form.product_price.data,
-            product_Image=product_form.product_image.data or 'default_product.png'
+            product_Name = product_form.product_name.data,
+            product_Brand = product_form.product_brand.data,
+            product_Type = product_form.product_type.data,
+            product_Description = product_form.product_description.data,
+            product_Stock = product_form.product_stock.data,
+            product_Price = product_form.product_price.data,
+            product_Image = filepath
         )
         db.session.add(product)
         db.session.commit()
@@ -492,13 +579,23 @@ def admin():
     elif product_form.update.data and product_form.validate():  # Update existing product
         product = Products.query.get(product_form.product_id.data)
         if product:
+            if product_form.product_image.data:
+                os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True) # Confirm folder exists
+                product_path = os.path.join(app.config['UPLOAD_FOLDER'], product_form.product_type.data) # Make subfolder by type like CPU, GPU etc.
+                os.makedirs(product_path, exist_ok=True)
+                filename = secure_filename(product_form.product_image.data.filename) # Sanitize filename
+                filepath = os.path.join(product_path, filename) # Full path/filename
+                product_form.product_image.data.save(filepath)
+            else: 
+                os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True) # Confirm folder exists
+                filepath = os.path.join(app.config['UPLOAD_FOLDER'], 'default_product.png')
             product.product_Name = product_form.product_name.data
             product.product_Brand = product_form.product_brand.data
             product.product_Type = product_form.product_type.data
             product.product_Description = product_form.product_description.data
             product.product_Stock = product_form.product_stock.data
             product.product_Price = product_form.product_price.data
-            product.product_Image = product_form.product_image.data or product.product_Image
+            product.product_Image = filepath or product.product_Image
             db.session.commit()
             flash(f"Product '{product_form.product_name.data}' updated successfully.", "success")
         else:
@@ -535,16 +632,16 @@ def admin():
         product = Products.query.filter_by(product_ID=product_id).first()
         if product:
             product_form = AdminProductForm(
-                product_id=product.product_ID,
-                product_name=product.product_Name,
-                product_brand=product.product_Brand,
-                product_type=product.product_Type,
-                product_description=product.product_Description,
-                product_stock=product.product_Stock,
-                product_price=product.product_Price,
-                product_image=product.product_Image
+                product_id = product.product_ID,
+                product_name = product.product_Name,
+                product_brand = product.product_Brand,
+                product_type = product.product_Type,
+                product_description = product.product_Description,
+                product_stock = product.product_Stock,
+                product_price = product.product_Price,
+                product_image = product.product_Image
             )
-            
+
     user_id = user_form.user_id.data
     user_form.user_id.data = ''
     new_role = user_form.new_role.data
@@ -565,7 +662,7 @@ def admin():
     product_form.product_image.data = ''
     users = UserCredentials.query.all()
     products = Products.query.all()
-    return render_template('admin.html', user_form = user_form, new_role = new_role, product_form = product_form, delete_form = delete_form, users = users, products = products)
+    return render_template('admin.html', user_form = user_form, new_role = new_role, product_form = product_form, product_price = product_price, product_stock = product_stock, delete_form = delete_form, users = users, products = products)
 
 #======================= Logout =======================#
 @app.route('/logout')

@@ -103,7 +103,7 @@
                 <label for="product_stock" class="form-label">Product Stock:</label>
                 {{ product_form.product_stock(class="form-control", id="product_stock") }}
                 <label for="product_image" class="form-label">Product Image URL:</label>
-                {{ product_form.product_image(class="form-control", id="product_image", placeholder="Enter image URL or leave empty for default") }}
+                {{ product_form.product_image(class="form-control", id="product_image", placeholder="Upload image or leave empty for default", type = "file", accept=".png,.jpeg,.jpg,.PNG,.JPEG,.JPG,.GIF,.gif") }}
                 <label for="product_description" class="form-label">Product Description:</label>
                 {{ product_form.product_description(class="form-control", id="product_description", rows="3") }}
                 {% if product_form.product_id.data %}
