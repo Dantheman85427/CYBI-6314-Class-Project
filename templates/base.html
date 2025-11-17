@@ -85,7 +85,7 @@
         
         /* Custom styles for PC parts store */
         .carousel-item {
-            height: 600px;
+            height: 400px;
             background-color: #000;
             position: relative;
         }
@@ -118,15 +118,15 @@
             width: 100%;
         }
         .carousel-caption {
-            background-color: rgba(0, 0, 0, 0.6);
+            background-color: var(--bs-carousel-bg);
             border-radius: 10px;
             padding: 20px;
         }
         .carousel-caption h1{
-            color: #00ffff; 
+            color: var(--bs-primary); 
         }
         .carousel-caption p{
-            color: #00ffff;
+            color: var(--bs-primary);
         }
         .carousel-control-prev,
     .carousel-control-next {
@@ -196,6 +196,334 @@
             height: 4rem;
             border-radius: .75rem;
         }
+        /* ===== THEME COLORS ===== */
+
+        /* RED THEME */
+        :root[data-bs-theme="red"] {
+            --bs-body-bg: #e6bdc3;
+            --bs-body-color: #5a0000;
+            --bs-primary: #d32f2f;
+            --bs-link-color: #b71c1c;
+            --bs-carousel-bg: rgba(0, 0, 0, 0.6);
+            --bs-caption-text: #fff5f5;
+        }
+
+        /* GREEN THEME */
+        :root[data-bs-theme="green"] {
+            --bs-body-bg: #e8f5e9;
+            --bs-body-color: #0f3d0f;
+            --bs-primary: #388e3c;
+            --bs-link-color: #1b5e20;
+            --bs-carousel-bg: rgba(44, 59, 45, 0.6);
+            --bs-caption-text: #e8f5e9;
+        }
+
+        /* PURPLE THEME */
+        :root[data-bs-theme="purple"] {
+            --bs-body-bg: #f3e5f5;
+            --bs-body-color: #3a004e;
+            --bs-primary: #7b1fa2;
+            --bs-link-color: #4a148c;
+            --bs-carousel-bg: rgb(189, 172, 209, 0.6);
+            --bs-caption-text: #f3e5f5;
+        }
+
+        /* DARK THEME */
+        :root[data-bs-theme="dark"] {
+            --bs-body-bg: #121212;
+            --bs-body-color: #f8f9fa;
+            --bs-primary: rgb(192, 192, 192);
+            --bs-link-color: #9ecbff;
+            --bs-carousel-bg: rgba(0, 0, 0, 0.2);
+            --bs-caption-text: #ffffff;
+           
+        }
+
+        /* LIGHT THEME */
+        :root[data-bs-theme="light"] {
+            --bs-body-bg: #ffffff;
+            --bs-body-color: #212529;
+            --bs-primary: #0d6efd;
+            --bs-link-color: #0a58ca;
+            --bs-carousel-bg: rgba(255, 255, 255, 0.719);
+            --bs-caption-text: #000000;
+        }
+
+        /* BUTTONS & HEADINGS FOR THEME ADAPTATION */
+        .btn-primary {
+            background-color: var(--bs-primary);
+            border-color: var(--bs-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: var(--bs-link-color);
+            border-color: var(--bs-link-color);
+        }
+
+        h1, h2, h3, h4, h5 {
+            color: var(--bs-primary);
+            transition: color 0.4s ease 0.1s;
+        }
+        /* ===== CAROUSEL INDICATORS - THEME BASED ===== */
+
+        /* RED THEME */
+        [data-bs-theme="red"] .carousel .carousel-indicators [data-bs-target],
+        [data-bs-theme="red"].carousel .carousel-indicators [data-bs-target] {
+            background-color: var(--bs-primary);
+        }
+
+        /* GREEN THEME */
+        [data-bs-theme="green"] .carousel .carousel-indicators [data-bs-target],
+        [data-bs-theme="green"].carousel .carousel-indicators [data-bs-target] {
+            background-color: var(--bs-primary);
+        }
+
+        /* PURPLE THEME */
+        [data-bs-theme="purple"] .carousel .carousel-indicators [data-bs-target],
+        [data-bs-theme="purple"].carousel .carousel-indicators [data-bs-target] {
+            background-color: var(--bs-primary);
+        }
+
+        /* DARK THEME */
+        [data-bs-theme="dark"] .carousel .carousel-indicators [data-bs-target],
+        [data-bs-theme="dark"].carousel .carousel-indicators [data-bs-target] {
+            background-color: var(--bs-primary);
+        }
+
+        /* LIGHT THEME */
+        [data-bs-theme="light"] .carousel .carousel-indicators [data-bs-target],
+        [data-bs-theme="light"].carousel .carousel-indicators [data-bs-target] {
+            background-color: var(--bs-primary);
+        }
+        .btn-theme-primary {
+            background-color: var(--bs-primary);
+            border-color: var(--bs-primary);
+            color: white;
+        }
+
+        .btn-theme-primary:hover {
+            background-color: var(--bs-link-color);
+            border-color: var(--bs-link-color);
+            color: white;
+        }
+        /* New colors */
+        /* BLUE THEME */
+        :root[data-bs-theme="blue"] {
+            --bs-body-bg: #e3f2fd;
+            --bs-body-color: #0d47a1;
+            --bs-primary: #1976d2;
+            --bs-link-color: #1565c0;
+            --bs-carousel-bg: rgba(33, 150, 243, 0.6);
+            --bs-caption-text: #e3f2fd;
+        }
+
+        /* ORANGE THEME */
+        :root[data-bs-theme="orange"] {
+            --bs-body-bg: #fff3e0;
+            --bs-body-color: #e65100;
+            --bs-primary: #f57c00;
+            --bs-link-color: #ef6c00;
+            --bs-carousel-bg: rgba(245, 124, 0, 0.6);
+            --bs-caption-text: #fff3e0;
+        }
+
+        /* TEAL THEME */
+        :root[data-bs-theme="teal"] {
+            --bs-body-bg: #e0f2f1;
+            --bs-body-color: #004d40;
+            --bs-primary: #00796b;
+            --bs-link-color: #00695c;
+            --bs-carousel-bg: rgba(0, 121, 107, 0.6);
+            --bs-caption-text: #e0f2f1;
+        }
+
+        /* PINK THEME */
+        :root[data-bs-theme="pink"] {
+            --bs-body-bg: #fce4ec;
+            --bs-body-color: #880e4f;
+            --bs-primary: #c2185b;
+            --bs-link-color: #ad1457;
+            --bs-carousel-bg: rgba(194, 24, 91, 0.6);
+            --bs-caption-text: #fce4ec;
+        }
+
+        /* BROWN THEME */
+        :root[data-bs-theme="brown"] {
+            --bs-body-bg: #efebe9;
+            --bs-body-color: #3e2723;
+            --bs-primary: #5d4037;
+            --bs-link-color: #4e342e;
+            --bs-carousel-bg: rgba(93, 64, 55, 0.6);
+            --bs-caption-text: #efebe9;
+        }
+
+        /* CYAN THEME */
+        :root[data-bs-theme="cyan"] {
+            --bs-body-bg: #e0f7fa;
+            --bs-body-color: #006064;
+            --bs-primary: #0097a7;
+            --bs-link-color: #00838f;
+            --bs-carousel-bg: rgba(0, 151, 167, 0.6);
+            --bs-caption-text: #e0f7fa;
+        }
+
+        /* INDIGO THEME */
+        :root[data-bs-theme="indigo"] {
+            --bs-body-bg: #e8eaf6;
+            --bs-body-color: #1a237e;
+            --bs-primary: #303f9f;
+            --bs-link-color: #283593;
+            --bs-carousel-bg: rgba(48, 63, 159, 0.6);
+            --bs-caption-text: #e8eaf6;
+        }
+
+        /* AMBER THEME */
+        :root[data-bs-theme="amber"] {
+            --bs-body-bg: #fff8e1;
+            --bs-body-color: #ff6f00;
+            --bs-primary: #ffa000;
+            --bs-link-color: #ff8f00;
+            --bs-carousel-bg: rgba(255, 160, 0, 0.6);
+            --bs-caption-text: #fff8e1;
+        }
+
+        /* DEEP PURPLE THEME */
+        :root[data-bs-theme="deep-purple"] {
+            --bs-body-bg: #ede7f6;
+            --bs-body-color: #311b92;
+            --bs-primary: #512da8;
+            --bs-link-color: #4527a0;
+            --bs-carousel-bg: rgba(81, 45, 168, 0.6);
+            --bs-caption-text: #ede7f6;
+        }
+
+        /* LIME THEME */
+        :root[data-bs-theme="lime"] {
+            --bs-body-bg: #f9fbe7;
+            --bs-body-color: #827717;
+            --bs-primary: #afb42b;
+            --bs-link-color: #9e9d24;
+            --bs-carousel-bg: rgba(175, 180, 43, 0.6);
+            --bs-caption-text: #f9fbe7;
+        }
+
+        /* DEEP ORANGE THEME */
+        :root[data-bs-theme="deep-orange"] {
+            --bs-body-bg: #fbe9e7;
+            --bs-body-color: #bf360c;
+            --bs-primary: #e64a19;
+            --bs-link-color: #d84315;
+            --bs-carousel-bg: rgba(230, 74, 25, 0.6);
+            --bs-caption-text: #fbe9e7;
+        }
+
+        /* LIGHT BLUE THEME */
+        :root[data-bs-theme="light-blue"] {
+            --bs-body-bg: #e1f5fe;
+            --bs-body-color: #01579b;
+            --bs-primary: #0288d1;
+            --bs-link-color: #0277bd;
+            --bs-carousel-bg: rgba(2, 136, 209, 0.6);
+            --bs-caption-text: #e1f5fe;
+        }
+
+        /* Add carousel indicator styles for new themes */
+        [data-bs-theme="blue"] .carousel .carousel-indicators [data-bs-target],
+        [data-bs-theme="blue"].carousel .carousel-indicators [data-bs-target] {
+            background-color: var(--bs-primary);
+        }
+
+        [data-bs-theme="orange"] .carousel .carousel-indicators [data-bs-target],
+        [data-bs-theme="orange"].carousel .carousel-indicators [data-bs-target] {
+            background-color: var(--bs-primary);
+        }
+
+        [data-bs-theme="teal"] .carousel .carousel-indicators [data-bs-target],
+        [data-bs-theme="teal"].carousel .carousel-indicators [data-bs-target] {
+            background-color: var(--bs-primary);
+        }
+
+        [data-bs-theme="pink"] .carousel .carousel-indicators [data-bs-target],
+        [data-bs-theme="pink"].carousel .carousel-indicators [data-bs-target] {
+            background-color: var(--bs-primary);
+        }
+
+        [data-bs-theme="brown"] .carousel .carousel-indicators [data-bs-target],
+        [data-bs-theme="brown"].carousel .carousel-indicators [data-bs-target] {
+            background-color: var(--bs-primary);
+        }
+
+        [data-bs-theme="cyan"] .carousel .carousel-indicators [data-bs-target],
+        [data-bs-theme="cyan"].carousel .carousel-indicators [data-bs-target] {
+            background-color: var(--bs-primary);
+        }
+
+        [data-bs-theme="indigo"] .carousel .carousel-indicators [data-bs-target],
+        [data-bs-theme="indigo"].carousel .carousel-indicators [data-bs-target] {
+            background-color: var(--bs-primary);
+        }
+
+        [data-bs-theme="amber"] .carousel .carousel-indicators [data-bs-target],
+        [data-bs-theme="amber"].carousel .carousel-indicators [data-bs-target] {
+            background-color: var(--bs-primary);
+        }
+
+        [data-bs-theme="deep-purple"] .carousel .carousel-indicators [data-bs-target],
+        [data-bs-theme="deep-purple"].carousel .carousel-indicators [data-bs-target] {
+            background-color: var(--bs-primary);
+        }
+
+        [data-bs-theme="lime"] .carousel .carousel-indicators [data-bs-target],
+        [data-bs-theme="lime"].carousel .carousel-indicators [data-bs-target] {
+            background-color: var(--bs-primary);
+        }
+
+        [data-bs-theme="deep-orange"] .carousel .carousel-indicators [data-bs-target],
+        [data-bs-theme="deep-orange"].carousel .carousel-indicators [data-bs-target] {
+            background-color: var(--bs-primary);
+        }
+
+        [data-bs-theme="light-blue"] .carousel .carousel-indicators [data-bs-target],
+        [data-bs-theme="light-blue"].carousel .carousel-indicators [data-bs-target] {
+            background-color: var(--bs-primary);
+        }
+        /* Theme button hover effects */
+        .theme-button {
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .theme-button:hover {
+            background-color: var(--theme-bg) !important;
+            color: var(--theme-text) !important;
+            border-color: var(--theme-color) !important;
+        }
+
+        .theme-button:active,
+        .theme-button:focus {
+            background-color: var(--theme-bg) !important;
+            color: var(--theme-text) !important;
+        }
+        /* Toast styling follows theme variables */
+        .toast {
+            border-radius: 10px;
+            color: var(--bs-body-color);         /* text color from theme */
+            background-color: var(--bs-body-bg); /* background from theme */
+            border: 1px solid var(--bs-primary);
+        }
+
+        /* Optional: make header or close button stand out */
+        .toast .btn-close {
+            filter: invert(1); /* ensures contrast on dark/light */
+        }
+
+        /* Toast container bottom-right */
+        .toast-container {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            z-index: 1100;
+        }
     </style>
 {% block head %}{% endblock %}
 </head>
@@ -207,27 +535,152 @@
             <span class="visually-hidden" id="bd-theme-text">Toggle theme</span>
         </button>
         <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="bd-theme-text">
-            <li>
-                <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="light" aria-pressed="false">
-                    <i class="bi bi-sun me-2 opacity-50"></i>
-                    Light
-                    <i class="bi bi-check2 ms-auto d-none"></i>
-                </button>
-            </li>
-            <li>
-                <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="dark" aria-pressed="false">
-                    <i class="bi bi-moon-stars me-2 opacity-50"></i>
-                    Dark
-                    <i class="bi bi-check2 ms-auto d-none"></i>
-                </button>
-            </li>
-            <li>
-                <button type="button" class="dropdown-item d-flex align-items-center active" data-bs-theme-value="auto" aria-pressed="true">
-                    <i class="bi bi-circle-half me-2 opacity-50"></i>
-                    Auto
-                    <i class="bi bi-check2 ms-auto d-none"></i>
-                </button>
-            </li>
+        <!-- Original Themes -->
+         <li>
+            <button type="button" class="dropdown-item d-flex align-items-center theme-button" data-bs-theme-value="auto" aria-pressed="false" style="--theme-color: #6c757d; --theme-bg: #f8f9fa; --theme-text: #212529;">
+                <i class="bi bi-circle-half me-2" style="color: var(--theme-color);"></i>
+                Auto
+                <i class="bi bi-check2 ms-auto d-none"></i>
+            </button>
+        </li>
+        <li>
+            <button type="button" class="dropdown-item d-flex align-items-center theme-button" data-bs-theme-value="red" aria-pressed="false" style="--theme-color: #d32f2f; --theme-bg: #e6bdc3; --theme-text: #5a0000;">
+                <i class="bi bi-heart-fill me-2" style="color: var(--theme-color);"></i>
+                Red
+                <i class="bi bi-check2 ms-auto d-none"></i>
+            </button>
+        </li>
+
+        <li>
+            <button type="button" class="dropdown-item d-flex align-items-center theme-button" data-bs-theme-value="green" aria-pressed="false" style="--theme-color: #388e3c; --theme-bg: #e8f5e9; --theme-text: #0f3d0f;">
+                <i class="bi bi-tree-fill me-2" style="color: var(--theme-color);"></i>
+                Green
+                <i class="bi bi-check2 ms-auto d-none"></i>
+            </button>
+        </li>
+
+        <li>
+            <button type="button" class="dropdown-item d-flex align-items-center theme-button" data-bs-theme-value="purple" aria-pressed="false" style="--theme-color: #7b1fa2; --theme-bg: #f3e5f5; --theme-text: #3a004e;">
+                <i class="bi bi-flower1 me-2" style="color: var(--theme-color);"></i>
+                Purple
+                <i class="bi bi-check2 ms-auto d-none"></i>
+            </button>
+        </li>
+
+        <li>
+            <button type="button" class="dropdown-item d-flex align-items-center theme-button" data-bs-theme-value="dark" aria-pressed="false" style="--theme-color: #c0c0c0; --theme-bg: #121212; --theme-text: #f8f9fa;">
+                <i class="bi bi-moon-stars-fill me-2" style="color: var(--theme-color);"></i>
+                Dark
+                <i class="bi bi-check2 ms-auto d-none"></i>
+            </button>
+        </li>
+
+        <li>
+            <button type="button" class="dropdown-item d-flex align-items-center theme-button" data-bs-theme-value="light" aria-pressed="false" style="--theme-color: #0d6efd; --theme-bg: #ffffff; --theme-text: #212529;">
+                <i class="bi bi-sun-fill me-2" style="color: var(--theme-color);"></i>
+                Light
+                <i class="bi bi-check2 ms-auto d-none"></i>
+            </button>
+        </li>
+
+        <hr class="dropdown-divider">
+
+        <!-- Extended Themes -->
+        <li>
+            <button type="button" class="dropdown-item d-flex align-items-center theme-button" data-bs-theme-value="blue" aria-pressed="false" style="--theme-color: #1976d2; --theme-bg: #e3f2fd; --theme-text: #0d47a1;">
+                <i class="bi bi-droplet-fill me-2" style="color: var(--theme-color);"></i>
+                Blue
+                <i class="bi bi-check2 ms-auto d-none"></i>
+            </button>
+        </li>
+
+        <li>
+            <button type="button" class="dropdown-item d-flex align-items-center theme-button" data-bs-theme-value="orange" aria-pressed="false" style="--theme-color: #f57c00; --theme-bg: #fff3e0; --theme-text: #e65100;">
+                <i class="bi bi-fire me-2" style="color: var(--theme-color);"></i>
+                Orange
+                <i class="bi bi-check2 ms-auto d-none"></i>
+            </button>
+        </li>
+
+        <li>
+            <button type="button" class="dropdown-item d-flex align-items-center theme-button" data-bs-theme-value="teal" aria-pressed="false" style="--theme-color: #00796b; --theme-bg: #e0f2f1; --theme-text: #004d40;">
+                <i class="bi bi-water me-2" style="color: var(--theme-color);"></i>
+                Teal
+                <i class="bi bi-check2 ms-auto d-none"></i>
+            </button>
+        </li>
+
+        <li>
+            <button type="button" class="dropdown-item d-flex align-items-center theme-button" data-bs-theme-value="pink" aria-pressed="false" style="--theme-color: #c2185b; --theme-bg: #fce4ec; --theme-text: #880e4f;">
+                <i class="bi bi-balloon-heart-fill me-2" style="color: var(--theme-color);"></i>
+                Pink
+                <i class="bi bi-check2 ms-auto d-none"></i>
+            </button>
+        </li>
+
+        <li>
+            <button type="button" class="dropdown-item d-flex align-items-center theme-button" data-bs-theme-value="brown" aria-pressed="false" style="--theme-color: #5d4037; --theme-bg: #efebe9; --theme-text: #3e2723;">
+                <i class="bi bi-cup-straw me-2" style="color: var(--theme-color);"></i>
+                Brown
+                <i class="bi bi-check2 ms-auto d-none"></i>
+            </button>
+        </li>
+
+        <li>
+            <button type="button" class="dropdown-item d-flex align-items-center theme-button" data-bs-theme-value="cyan" aria-pressed="false" style="--theme-color: #0097a7; --theme-bg: #e0f7fa; --theme-text: #006064;">
+                <i class="bi bi-snow me-2" style="color: var(--theme-color);"></i>
+                Cyan
+                <i class="bi bi-check2 ms-auto d-none"></i>
+            </button>
+        </li>
+
+        <li>
+            <button type="button" class="dropdown-item d-flex align-items-center theme-button" data-bs-theme-value="indigo" aria-pressed="false" style="--theme-color: #303f9f; --theme-bg: #e8eaf6; --theme-text: #1a237e;">
+                <i class="bi bi-stars me-2" style="color: var(--theme-color);"></i>
+                Indigo
+                <i class="bi bi-check2 ms-auto d-none"></i>
+            </button>
+        </li>
+
+        <li>
+            <button type="button" class="dropdown-item d-flex align-items-center theme-button" data-bs-theme-value="amber" aria-pressed="false" style="--theme-color: #ffa000; --theme-bg: #fff8e1; --theme-text: #ff6f00;">
+                <i class="bi bi-lightning-charge-fill me-2" style="color: var(--theme-color);"></i>
+                Amber
+                <i class="bi bi-check2 ms-auto d-none"></i>
+            </button>
+        </li>
+
+        <li>
+            <button type="button" class="dropdown-item d-flex align-items-center theme-button" data-bs-theme-value="deep-purple" aria-pressed="false" style="--theme-color: #512da8; --theme-bg: #ede7f6; --theme-text: #311b92;">
+                <i class="bi bi-gem me-2" style="color: var(--theme-color);"></i>
+                Deep Purple
+                <i class="bi bi-check2 ms-auto d-none"></i>
+            </button>
+        </li>
+
+        <li>
+            <button type="button" class="dropdown-item d-flex align-items-center theme-button" data-bs-theme-value="lime" aria-pressed="false" style="--theme-color: #afb42b; --theme-bg: #f9fbe7; --theme-text: #827717;">
+                <i class="bi bi-emoji-laughing me-2" style="color: var(--theme-color);"></i>
+                Lime
+                <i class="bi bi-check2 ms-auto d-none"></i>
+            </button>
+        </li>
+
+        <li>
+            <button type="button" class="dropdown-item d-flex align-items-center theme-button" data-bs-theme-value="deep-orange" aria-pressed="false" style="--theme-color: #e64a19; --theme-bg: #fbe9e7; --theme-text: #bf360c;">
+                <i class="bi bi-sunrise-fill me-2" style="color: var(--theme-color);"></i>
+                Deep Orange
+                <i class="bi bi-check2 ms-auto d-none"></i>
+            </button>
+        </li>
+
+        <li>
+            <button type="button" class="dropdown-item d-flex align-items-center theme-button" data-bs-theme-value="light-blue" aria-pressed="false" style="--theme-color: #0288d1; --theme-bg: #e1f5fe; --theme-text: #01579b;">
+                <i class="bi bi-cloud-sun me-2" style="color: var(--theme-color);"></i>
+                Light Blue
+                <i class="bi bi-check2 ms-auto d-none"></i>
+            </button>
+        </li>
         </ul>
     </div>
 
@@ -268,7 +721,7 @@
                     </ul>
                     <form class="d-flex" role="search">
                         <input class="form-control me-2" type="search" placeholder="Search products..." aria-label="Search">
-                        <button class="btn btn-outline-primary" type="submit">
+                        <button class="btn btn-theme-primary" type="submit">
                             <i class="bi bi-search"></i>
                         </button>
                     </form>
@@ -344,7 +797,7 @@
 
     <!-- Fixed Theme toggle script -->
     <script>
-        (() => {
+       (() => {
             'use strict'
             const storedTheme = localStorage.getItem('theme')
             const getPreferredTheme = () => {
@@ -380,13 +833,15 @@
                 
                 // Update theme icon
                 if (themeIcon) {
-                    themeIcon.classList.remove('bi-sun', 'bi-moon', 'bi-circle-half')
+                    themeIcon.classList.remove('bi-sun', 'bi-moon', 'bi-circle-half', 'bi-palette');
                     if (theme === 'dark') {
-                        themeIcon.classList.add('bi-moon')
+                        themeIcon.classList.add('bi-moon');
                     } else if (theme === 'light') {
-                        themeIcon.classList.add('bi-sun')
+                        themeIcon.classList.add('bi-sun');
+                    } else if (theme === 'auto') {
+                        themeIcon.classList.add('bi-circle-half');
                     } else {
-                        themeIcon.classList.add('bi-circle-half')
+                        themeIcon.classList.add('bi-palette'); // for color themes
                     }
                 }
             }

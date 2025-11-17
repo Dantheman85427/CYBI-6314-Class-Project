@@ -1,17 +1,32 @@
-{% extends 'base.html' %}
-
-{% block title %}Orders - PC Parts Store{% endblock %}
-
-{% block head %}
-{% endblock %}
-
+{% extends "base.html" %}
 {% block body %}
-<main>
-    <!-- Flash messages -->
-    {% for message in get_flashed_messages() %}
-    <div class="alert alert-warning mt-3" role="alert">
-        {{ message }}
-    </div>
-    {% endfor %}
-</main>
+
+<div class="container mt-4">
+    <h2>Your Orders</h2>
+    <hr>
+
+    {% if orders|length == 0 %}
+        <p>No orders yet.</p>
+    {% else %}
+        {% for order in orders %}
+            <div class="card mb-3">
+                <div class="card-header">
+                    Order #{{ order.order_id }} — {{ order.created_at.strftime('%Y-%m-%d %H:%M') }}
+                </div>
+                <ul class="list-group list-group-flush">
+                    {% for item in order.items %}
+                        <li class="list-group-item d-flex justify-content-between">
+                            {{ item.product.product_Name }} (x{{ item.quantity }})
+                            <span>${{ "%.2f"|format(item.price_each * item.quantity) }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+                <div class="card-footer text-end">
+                    <strong>Total: ${{ "%.2f"|format(order.total_price) }}</strong>
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
+
 {% endblock %}

@@ -153,6 +153,8 @@ class Products(db.Model):
     product_Image = db.Column(db.Text, nullable=True) # Path to Image
     product_Added = db.Column(db.DateTime, default=datetime.utcnow)
 
+
+
 # Create a registration form class
 class RegisterForm (FlaskForm):
     username = StringField("Username: ", validators=[data_required()])
@@ -223,6 +225,51 @@ class AdminProductForm (FlaskForm):
     product_image = FileField("Product Image", validators=[Optional()])
     submit = SubmitField("Add Product")
     update = SubmitField("Update Product")
+
+#======= Cart and Orders =======#
+
+class Cart(db.Model):
+    __tablename__ = 'cart'
+
+    cart_id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user_credentials.user_ID'), unique=True)
+
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    items = db.relationship("CartItem", backref="cart", cascade="all, delete")
+
+class CartItem(db.Model):
+    __tablename__ = 'cart_item'
+
+    item_id = db.Column(db.Integer, primary_key=True)
+    cart_id = db.Column(db.Integer, db.ForeignKey('cart.cart_id'))
+    product_id = db.Column(db.Integer, db.ForeignKey('products.product_ID'))
+    quantity = db.Column(db.Integer, default=1)
+
+    # Get product info easily
+    product = db.relationship("Products")
+
+class Orders(db.Model):
+    __tablename__ = 'orders'
+
+    order_id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user_credentials.user_ID'))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    total_price = db.Column(db.Float, default=0.0)
+
+    items = db.relationship("OrderItem", backref="order", cascade="all, delete")
+
+class OrderItem(db.Model):
+    __tablename__ = 'order_item'
+
+    item_id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.Integer, db.ForeignKey('orders.order_id'))
+    product_id = db.Column(db.Integer, db.ForeignKey('products.product_ID'))
+    quantity = db.Column(db.Integer, default=1)
+    price_each = db.Column(db.Float)
+
+    product = db.relationship("Products")
+
+
 
 class DeleteForm (FlaskForm):
     submit = SubmitField("Delete")
@@ -297,6 +344,7 @@ def log_in():
         return render_template('log_in.html', form=form, username = username, passHash = passHash)
 
 #======================= Create_Account =======================#
+#======================= Create_Account =======================#
 @app.route('/Create_Account',  methods=['POST', 'GET'])
 def create_account():
     if session.get('username'):
@@ -313,66 +361,43 @@ def create_account():
         password = None
         passHash = None
         form = RegisterForm()
-        # Checks if the submit button has been pressed
-        # Add this debug print to see what's in the form data ------------ REMOVE LATER ------------
-        if form.is_submitted():
-            print('Form submitted')
-            print(f'Form errors: {form.errors}')
-            print(f'Username data: {form.username.data}')
-            print(f'Email data: {form.email.data}')
-            print(f'DOB data: {form.dob.data}')
-            print(f'Password data: {form.password.data}')
 
         if form.validate_on_submit():
-            print('form validated')
-            # Check if username already exists
             existing_username = UserCredentials.query.filter_by(user_Name=form.username.data).first()
-            # Queries the database to see if the email already exists in the database
             existing_email = UserCredentials.query.filter_by(user_Email=form.email.data).first()
             if existing_username is None:
-                print('username is available')
                 if existing_email is None:
-                    print('email is available as well')
                     passHash = generateHash(form.password.data)
-                    # A database object is created with the user's information
-                    user = UserCredentials(user_Name = form.username.data, user_DOB = form.dob.data, user_Address = form.address.data, user_City = form.city.data, user_State = form.state.data, user_Zip = form.zip.data, user_Email = form.email.data, pass_hash = passHash)
-                    session['username'] = user.user_Name  
-                    # The newly created user object is added to a database session, and committed as an entry to the user_credentials table
+                    user = UserCredentials(
+                        user_Name=form.username.data, 
+                        user_DOB=form.dob.data, 
+                        user_Address=form.address.data, 
+                        user_City=form.city.data, 
+                        user_State=form.state.data, 
+                        user_Zip=form.zip.data, 
+                        user_Email=form.email.data, 
+                        pass_hash=passHash
+                    )
                     db.session.add(user)
                     db.session.commit()
-                    session['user_id'] = (UserCredentials.query.filter_by(user_Name = form.username.data).first()).user_ID
+                    
+                    # CREATE CART FOR NEW USER
+                    user_id = user.user_ID
+                    cart = Cart(user_id=user_id)
+                    db.session.add(cart)
+                    db.session.commit()
+                    
+                    session['username'] = user.user_Name  
+                    session['user_id'] = user.user_ID
 
-                    # The user is logged in and redirected to the homepage
                     flash("Account created successfully! Welcome, " + session.get('username') + "!")
                     return redirect(url_for('homepage'))
-                
-                # If the email that was entered is associated with an existing user account, the user is instead brought back to the registration page
                 else:
                     flash("Error: Email already in use.")
             else:
                 flash("Error: Username already in use.")
 
-            # Clearing the form data after it has been submitted
-            username = form.username.data
-            form.username.data = ''
-            dob = form.dob.data
-            form.dob.data = ''
-            address = form.address.data
-            form.address.data = ''
-            city = form.city.data
-            form.city.data = ''
-            state = form.state.data
-            form.state.data = ''
-            zip = form.zip.data
-            form.zip.data = ''
-            email = form.email.data
-            form.email.data = ''
-            password = form.password.data
-            form.password.data = ''
-
-        # Re-rendering the account creation page after an unsuccessful submission
-        return render_template('create_acct.html', form=form, username = username, dob = dob, address = address, city = city, state = state, zip = zip, email = email, passHash = passHash)
-
+        return render_template('create_acct.html', form=form, username=username, dob=dob, address=address, city=city, state=state, zip=zip, email=email, passHash=passHash)
 #======================= Forgot_Password =======================#
 @app.route('/Forgot_Password', methods=['POST', 'GET'])
 def forgotpw():
@@ -434,21 +459,174 @@ def homepage():
     
 #======================= Parts =======================#
 @app.route('/Homepage/Parts')
+@app.route('/Homepage/Parts/<category>')
 @logged_in_required()
-def parts():
-    return render_template('parts.html')
+def parts(category=None):
+    # Map URL categories to database product types
+    category_mapping = {
+        'cpus': 'CPU',
+        'gpus': 'GPU', 
+        'memory': 'RAM',
+        'motherboards': 'Motherboard',
+        'storage': 'Storage',
+        'power-supplies': 'PSU',
+        'cases': 'Case',
+        'cooling': 'Cooling',
+        'accessories': 'Other'
+    }
     
+    # Base query
+    query = Products.query
+    
+    # Apply category filter if provided
+    product_type = None
+    if category and category in category_mapping:
+        product_type = category_mapping[category]
+        query = query.filter(Products.product_Type == product_type)
+    
+    # Get brand filter from request
+    brand_filter = request.args.get('brand')
+    if brand_filter:
+        query = query.filter(Products.product_Brand == brand_filter)
+    
+    # Get price filters from request
+    min_price = request.args.get('min_price', type=float)
+    max_price = request.args.get('max_price', type=float)
+    
+    if min_price is not None and min_price > 0:
+        query = query.filter(Products.product_Price >= min_price)
+    
+    if max_price is not None and max_price > 0:
+        query = query.filter(Products.product_Price <= max_price)
+    
+    # Execute query
+    products = query.all()
+    
+    # Get available brands for the current category
+    brands_query = Products.query
+    if product_type:
+        brands_query = brands_query.filter(Products.product_Type == product_type)
+    
+    brands = list(set([p.product_Brand for p in brands_query.all() if p.product_Brand]))
+    brands.sort()
+    
+    # Get category name for display
+    category_name = product_type if product_type else None
+    
+    return render_template('parts.html', 
+                         products=products,
+                         brands=brands,
+                         category=category,
+                         category_name=category_name,
+                         brand_filter=brand_filter,
+                         min_price=min_price or 0,
+                         max_price=max_price)
+
+
+#======================= Cart =======================#
+
+@app.route('/add_to_cart/<int:product_id>')
+@logged_in_required()
+def add_to_cart(product_id):
+    user_id = session['user_id']
+
+    # Check if user already has a cart
+    cart = Cart.query.filter_by(user_id=user_id).first()
+
+    # If no cart exists, create one
+    if not cart:
+        cart = Cart(user_id=user_id)
+        db.session.add(cart)
+        db.session.commit()
+
+    # Check if product already in cart
+    item = CartItem.query.filter_by(cart_id=cart.cart_id, product_id=product_id).first()
+
+    if item:
+        item.quantity += 1
+    else:
+        item = CartItem(cart_id=cart.cart_id, product_id=product_id, quantity=1)
+        db.session.add(item)
+
+    db.session.commit()
+    flash("Item added to cart!")
+    return redirect(request.referrer)
+
 #======================= Cart =======================#
 @app.route('/Homepage/Cart')
 @logged_in_required()
 def cart():
-    return render_template('cart.html')
+    user_id = session['user_id']
+    print(f"DEBUG: User ID: {user_id}")  # Debug line
     
-#======================= Orders =======================#
+    cart = Cart.query.filter_by(user_id=user_id).first()
+    print(f"DEBUG: Cart found: {cart}")  # Debug line
+    
+    if not cart or len(cart.items) == 0:
+        print("DEBUG: Cart is empty")  # Debug line
+        return render_template('cart.html', items=[], total=0)
+
+    total = sum(item.product.product_Price * item.quantity for item in cart.items)
+    print(f"DEBUG: Cart items: {len(cart.items)}, Total: {total}")  # Debug line
+
+    return render_template('cart.html', items=cart.items, total=total)
+    
+#======================= Cart --> Orders =======================#
+@app.route('/checkout')
+@logged_in_required()
+def checkout():
+    user_id = session['user_id']
+    cart = Cart.query.filter_by(user_id=user_id).first()
+
+    if not cart or len(cart.items) == 0:
+        flash("Cart is empty.")
+        return redirect(url_for('cart'))
+
+    # Create an order
+    order = Orders(user_id=user_id, total_price=0.0)
+    db.session.add(order)
+    db.session.commit()
+
+    total_price = 0
+
+    # Move each cart item to OrderItem
+    for item in cart.items:
+        product = Products.query.get(item.product_id)
+        if product.product_Stock < item.quantity:
+            flash(f"Not Enough for {product.product_Name}.")
+            db.session.rollback()
+            return redirect(url_for('cart'))
+        
+        # Decrease product stock
+        product.product_Stock -= item.quantity
+
+        order_item = OrderItem(
+            order_id=order.order_id,
+            product_id=item.product_id,
+            quantity=item.quantity,
+            price_each=item.product.product_Price
+        )
+        db.session.add(order_item)
+
+        total_price += item.product.product_Price * item.quantity
+
+    order.total_price = total_price
+
+    # Clear cart
+    CartItem.query.filter_by(cart_id=cart.cart_id).delete()
+    db.session.commit()
+
+    flash("Order placed successfully!")
+    return redirect(url_for('orders'))
+
+
 @app.route('/Homepage/Orders')
 @logged_in_required()
 def orders():
-    return render_template('orders.html')
+    user_id = session['user_id']
+    orders = Orders.query.filter_by(user_id=user_id).order_by(Orders.created_at.desc()).all()
+    return render_template('orders.html', orders=orders)
+
     
 #======================= Account =======================#
 @app.route('/Homepage/Account', methods=['POST', 'GET'])
@@ -521,6 +699,23 @@ def account():
 
     return render_template('account.html', user = current_user, form = form, delete_form = delete_form)
 
+#======================= Product Filter Form =======================#
+class ProductFilterForm(FlaskForm):
+    product_type = SelectField("Filter by Product Type", choices=[
+        ('', 'All Products'),
+        ('CPU', 'CPU'),
+        ('GPU', 'GPU'),
+        ('RAM', 'RAM'),
+        ('Motherboard', 'Motherboard'),
+        ('Storage', 'Storage'),
+        ('PSU', 'Power Supply'),
+        ('Case', 'Case'),
+        ('Cooling', 'Cooling'),
+        ('Other', 'Other')
+    ], validators=[Optional()])
+    submit = SubmitField("Apply Filter")
+
+
 #======================= Admin =======================#
 @app.route('/Homepage/Admin', methods=['POST', 'GET'])
 @admin_required()
@@ -537,6 +732,17 @@ def admin():
     user_form = AdminUserForm()
     product_form = AdminProductForm()
     delete_form = DeleteForm()
+    filter_form = ProductFilterForm()  # Add filter form
+
+    # Handle Product Filtering (GET request)
+    selected_type = request.args.get('product_type', '')
+    if selected_type:
+        filter_form.product_type.data = selected_type
+
+    # Build products query based on filter
+    products_query = Products.query
+    if selected_type:
+        products_query = products_query.filter(Products.product_Type == selected_type)
 
     # Handle User Role Updates
     if user_form.validate_on_submit():
@@ -554,14 +760,14 @@ def admin():
     # Handle Product Operations
     if product_form.submit.data and product_form.validate():  # Add new product
         if product_form.product_image.data:
-            os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True) # Confirm folder exists
-            product_path = os.path.join(app.config['UPLOAD_FOLDER'], product_form.product_type.data) # Make subfolder by type like CPU, GPU etc.
+            os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+            product_path = os.path.join(app.config['UPLOAD_FOLDER'], product_form.product_type.data)
             os.makedirs(product_path, exist_ok=True)
-            filename = secure_filename(product_form.product_image.data.filename) # Sanitize filename
-            filepath = os.path.join(product_path, filename) # Full path/filename
+            filename = secure_filename(product_form.product_image.data.filename)
+            filepath = os.path.join(product_path, filename)
             product_form.product_image.data.save(filepath)
         else: 
-            os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True) # Confirm folder exists
+            os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], 'default_product.png')
         product = Products(
             product_Name = product_form.product_name.data,
@@ -575,29 +781,32 @@ def admin():
         db.session.add(product)
         db.session.commit()
         flash(f"Product '{product_form.product_name.data}' added successfully.", "success")
+        # Clear form after successful submission
+        return redirect(url_for('admin', product_type=selected_type))
 
     elif product_form.update.data and product_form.validate():  # Update existing product
         product = Products.query.get(product_form.product_id.data)
         if product:
             if product_form.product_image.data:
-                os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True) # Confirm folder exists
-                product_path = os.path.join(app.config['UPLOAD_FOLDER'], product_form.product_type.data) # Make subfolder by type like CPU, GPU etc.
+                os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+                product_path = os.path.join(app.config['UPLOAD_FOLDER'], product_form.product_type.data)
                 os.makedirs(product_path, exist_ok=True)
-                filename = secure_filename(product_form.product_image.data.filename) # Sanitize filename
-                filepath = os.path.join(product_path, filename) # Full path/filename
+                filename = secure_filename(product_form.product_image.data.filename)
+                filepath = os.path.join(product_path, filename)
                 product_form.product_image.data.save(filepath)
             else: 
-                os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True) # Confirm folder exists
-                filepath = os.path.join(app.config['UPLOAD_FOLDER'], 'default_product.png')
+                filepath = product.product_Image  # Keep existing image if no new one
             product.product_Name = product_form.product_name.data
             product.product_Brand = product_form.product_brand.data
             product.product_Type = product_form.product_type.data
             product.product_Description = product_form.product_description.data
             product.product_Stock = product_form.product_stock.data
             product.product_Price = product_form.product_price.data
-            product.product_Image = filepath or product.product_Image
+            product.product_Image = filepath
             db.session.commit()
             flash(f"Product '{product_form.product_name.data}' updated successfully.", "success")
+            # Clear form after successful update
+            return redirect(url_for('admin', product_type=selected_type))
         else:
             flash("Error: Product not found.", "danger")
 
@@ -638,31 +847,42 @@ def admin():
                 product_type = product.product_Type,
                 product_description = product.product_Description,
                 product_stock = product.product_Stock,
-                product_price = product.product_Price,
-                product_image = product.product_Image
+                product_price = product.product_Price
+                # Note: product_image is handled separately in the form
             )
 
-    user_id = user_form.user_id.data
-    user_form.user_id.data = ''
-    new_role = user_form.new_role.data
-    user_form.new_role.data = ''
-    product_name = product_form.product_name.data
-    product_form.product_name.data = ''
-    product_brand = product_form.product_brand.data
-    product_form.product_brand.data = ''
-    product_type = product_form.product_type.data
-    product_form.product_type.data = ''
-    product_description = product_form.product_description.data
-    product_form.product_description.data = ''
-    product_stock = product_form.product_stock.data
-    product_form.product_stock.data = ''
-    product_price = product_form.product_price.data
-    product_form.product_price.data = ''
-    product_image = product_form.product_image.data
-    product_form.product_image.data = ''
+    # Clear form data (only if not editing)
+    if not request.args.get('edit_product'):
+        user_id = user_form.user_id.data
+        user_form.user_id.data = ''
+        new_role = user_form.new_role.data
+        user_form.new_role.data = ''
+        product_name = product_form.product_name.data
+        product_form.product_name.data = ''
+        product_brand = product_form.product_brand.data
+        product_form.product_brand.data = ''
+        product_type = product_form.product_type.data
+        product_form.product_type.data = ''
+        product_description = product_form.product_description.data
+        product_form.product_description.data = ''
+        product_stock = product_form.product_stock.data
+        product_form.product_stock.data = ''
+        product_price = product_form.product_price.data
+        product_form.product_price.data = ''
+        product_image = product_form.product_image.data
+        product_form.product_image.data = ''
+
     users = UserCredentials.query.all()
-    products = Products.query.all()
-    return render_template('admin.html', user_form = user_form, new_role = new_role, product_form = product_form, product_price = product_price, product_stock = product_stock, delete_form = delete_form, users = users, products = products)
+    products = products_query.all()  # Use the filtered query
+    
+    return render_template('admin.html', 
+                         user_form=user_form, 
+                         product_form=product_form, 
+                         delete_form=delete_form,
+                         filter_form=filter_form, 
+                         users=users, 
+                         products=products,
+                         selected_type=selected_type)
 
 #======================= Logout =======================#
 @app.route('/logout')

@@ -1,19 +1,316 @@
 {% extends 'base.html' %}
 
-{% block title %}Parts - PC Parts Store{% endblock %}
+{% block title %}
+{% if category %}{{ category|title }} - {% endif %}PC Parts - PC Hardware Pro
+{% endblock %}
 
 {% block head %}
+<style>
+    /* Match homepage hover effect */
+    .product-card:hover {
+        transform: translateY(-10px);
+        transition: transform .3s ease;
+    }
+    .product-card {
+        transition: transform .3s ease;
+    }
+    /* Hero background dimming for contrast */
+    .category-hero {
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-blend-mode: multiply;
+        background-color: rgba(0, 0, 0, .55);
+    }
+</style>
 {% endblock %}
 
 {% block body %}
-<main>
-    <!-- Was thinking that this page should be the same for all the parts, whether clicked on CPU, RAM, GPU, etc. Just has to be a dynamic page-->
-    <!-- Flash messages -->
-     
-    {% for message in get_flashed_messages() %}
-    <div class="alert alert-warning mt-3" role="alert">
-        {{ message }}
+
+<!-- ========================= -->
+<!--   HERO / CATEGORY HEADER  -->
+<!-- ========================= -->
+<div class="px-4 py-5 text-center text-light category-hero border-bottom"
+     style="background-image: url('https://images.unsplash.com/photo-1604754742629-3e5728249d73?auto=format&w=1600&q=60');">
+    <h1 class="display-4 fw-bold text-primary">
+        {% if category %}
+            {{ category_name|upper if category_name else category|replace('-', ' ')|upper }}
+        {% else %}
+            ALL PC PARTS
+        {% endif %}
+    </h1>
+
+    <div class="col-lg-6 mx-auto">
+        <p class="lead opacity-75">
+
+        {% if category == 'cpus' %}
+            High-performance processors for gaming and productivity
+        {% elif category == 'gpus' %}
+            Powerful graphics cards for gaming and creative work
+        {% elif category == 'motherboards' %}
+            Foundation components for your PC build
+        {% elif category == 'memory' %}
+            High-speed RAM for optimal system performance
+        {% elif category == 'storage' %}
+            Fast SSDs and reliable storage solutions
+        {% elif category == 'power-supplies' %}
+            Reliable power delivery for your system
+        {% elif category == 'cooling' %}
+            Efficient cooling solutions for optimal performance
+        {% elif category == 'cases' %}
+            Stylish cases with excellent airflow
+        {% elif category == 'accessories' %}
+            Essential peripherals and accessories
+        {% else %}
+            Complete selection of PC components and accessories
+        {% endif %}
+
+        </p>
+        <span class="badge text-bg-primary px-3 py-2 mt-3">
+            {{ products|length }} products found
+        </span>
     </div>
-    {% endfor %}
-</main>
+</div>
+
+<!-- ========================= -->
+<!--          CONTENT          -->
+<!-- ========================= -->
+<div class="container my-5">
+    <div class="row g-4">
+
+        <!-- ========================= -->
+        <!--        FILTER SIDEBAR     -->
+        <!-- ========================= -->
+        <div class="col-lg-3">
+            <div class="card shadow-sm sticky-top" style="top: 2rem;">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">
+                        <i class="bi bi-funnel me-2"></i>Filters
+                    </h5>
+
+                    <!-- Active Filters -->
+                    {% if brand_filter or min_price > 0 or (max_price is not none and max_price < 2000) %}
+                        <h6 class="text-muted mb-2">Active Filters:</h6>
+                        <div class="d-flex flex-wrap gap-2 mb-4">
+
+                            {% if brand_filter %}
+                            <span class="badge rounded-pill text-bg-primary d-inline-flex align-items-center">
+                                Brand: {{ brand_filter }}
+                                <i class="bi bi-x ms-2" style="cursor:pointer;" onclick="removeFilter('brand')"></i>
+                            </span>
+                            {% endif %}
+
+                            {% if min_price > 0 %}
+                            <span class="badge rounded-pill text-bg-primary d-inline-flex align-items-center">
+                                Min: ${{ min_price }}
+                                <i class="bi bi-x ms-2" style="cursor:pointer;" onclick="removeFilter('min_price')"></i>
+                            </span>
+                            {% endif %}
+
+                            {% if max_price is not none and max_price < 2000 %}
+                            <span class="badge rounded-pill text-bg-primary d-inline-flex align-items-center">
+                                Max: ${{ max_price }}
+                                <i class="bi bi-x ms-2" style="cursor:pointer;" onclick="removeFilter('max_price')"></i>
+                            </span>
+                            {% endif %}
+
+                            <span class="badge rounded-pill text-bg-danger d-inline-flex align-items-center"
+                                  style="cursor:pointer;" onclick="clearAllFilters()">
+                                Clear All <i class="bi bi-x ms-2"></i>
+                            </span>
+                        </div>
+                    {% endif %}
+
+                    <!-- Brand Filter -->
+                    {% if brands %}
+                    <h6 class="text-muted mb-3">Brand</h6>
+                    {% for brand in brands %}
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="brand" value="{{ brand }}"
+                               {% if brand_filter == brand %}checked{% endif %}
+                               onchange="updateFilters()">
+                        <label class="form-check-label">{{ brand }}</label>
+                    </div>
+                    {% endfor %}
+                    <hr>
+                    {% endif %}
+
+                    <!-- Price Filter -->
+                    <h6 class="text-muted mb-3">Price Range</h6>
+                    <input type="range" class="form-range"
+                           min="0" max="2000"
+                           value="{{ max_price if max_price is not none and max_price < 2000 else 2000 }}"
+                           oninput="updatePriceDisplay(this.value)">
+
+                    <div class="d-flex gap-2 mt-2">
+                        <input type="number" id="minPrice"
+                               class="form-control form-control-sm"
+                               placeholder="Min" value="{{ min_price }}"
+                               onchange="updateFilters()">
+                        <input type="number" id="maxPrice"
+                               class="form-control form-control-sm"
+                               placeholder="Max"
+                               value="{{ max_price if max_price is not none else '' }}"
+                               onchange="updateFilters()">
+                    </div>
+
+                    <hr>
+
+                    <!-- Category Navigation -->
+                    <h6 class="text-muted mb-3">Categories</h6>
+                    <div class="list-group list-group-flush">
+                        <a href="{{ url_for('parts') }}" class="list-group-item list-group-item-action">
+                            <i class="bi bi-grid-3x3-gap me-2"></i>All PC Parts
+                        </a>
+
+                        <a href="{{ url_for('parts', category='cpus') }}"
+                           class="list-group-item list-group-item-action {% if category == 'cpus' %}active{% endif %}">
+                           <i class="bi bi-cpu me-2"></i>Processors
+                        </a>
+
+                        <a href="{{ url_for('parts', category='gpus') }}"
+                           class="list-group-item list-group-item-action {% if category == 'gpus' %}active{% endif %}">
+                           <i class="bi bi-gpu-card me-2"></i>Graphics Cards
+                        </a>
+
+                        <a href="{{ url_for('parts', category='motherboards') }}"
+                           class="list-group-item list-group-item-action {% if category == 'motherboards' %}active{% endif %}">
+                           <i class="bi bi-motherboard me-2"></i>Motherboards
+                        </a>
+
+                        <a href="{{ url_for('parts', category='memory') }}"
+                           class="list-group-item list-group-item-action {% if category == 'memory' %}active{% endif %}">
+                           <i class="bi bi-memory me-2"></i>Memory
+                        </a>
+
+                        <a href="{{ url_for('parts', category='storage') }}"
+                           class="list-group-item list-group-item-action {% if category == 'storage' %}active{% endif %}">
+                           <i class="bi bi-hdd me-2"></i>Storage
+                        </a>
+
+                        <a href="{{ url_for('parts', category='power-supplies') }}"
+                           class="list-group-item list-group-item-action {% if category == 'power-supplies' %}active{% endif %}">
+                           <i class="bi bi-lightning-charge me-2"></i>Power Supplies
+                        </a>
+
+                        <a href="{{ url_for('parts', category='cooling') }}"
+                           class="list-group-item list-group-item-action {% if category == 'cooling' %}active{% endif %}">
+                           <i class="bi bi-fan me-2"></i>Cooling
+                        </a>
+
+                        <a href="{{ url_for('parts', category='cases') }}"
+                           class="list-group-item list-group-item-action {% if category == 'cases' %}active{% endif %}">
+                           <i class="bi bi-pc me-2"></i>Cases
+                        </a>
+
+                        <a href="{{ url_for('parts', category='accessories') }}"
+                           class="list-group-item list-group-item-action {% if category == 'accessories' %}active{% endif %}">
+                           <i class="bi bi-keyboard me-2"></i>Accessories
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================= -->
+        <!--       PRODUCT GRID        -->
+        <!-- ========================= -->
+        <div class="col-lg-9">
+
+            <!-- Sort bar -->
+            <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="text-muted">Sort by:</span>
+                    <select class="form-select form-select-sm" onchange="sortProducts(this.value)">
+                        <option value="featured">Featured</option>
+                        <option value="price-low">Price: Low to High</option>
+                        <option value="price-high">Price: High to Low</option>
+                        <option value="name">Name A-Z</option>
+                    </select>
+                </div>
+
+                <span class="text-muted">
+                    Showing {{ products|length }} products
+                </span>
+            </div>
+
+            <!-- Product cards -->
+            {% if products %}
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
+                {% for product in products %}
+                <div class="col">
+                    <div class="card shadow-sm border-0 h-100 product-card">
+
+                        {% set img_path = product.product_Image.replace('\\', '/') if product.product_Image else 'images/default.png' %}
+                        <img src="{{ url_for('static', filename=product.product_Image.replace('static/', '')) }}"
+                             class="card-img-top"
+                             alt="{{ product.product_Name }}"
+                             style="height:200px; object-fit:cover;">
+
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ product.product_Name }}</h5>
+                                <p class="card-text">${{ "%.2f"|format(product.product_Price) }}</p>
+                                <p class="card-text">{{ product.product_Description }}</p>
+                                <a href="{{ url_for('add_to_cart', product_id=product.product_ID) }}" 
+                                class="btn btn-primary">Add to Cart</a>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-search display-1 text-muted"></i>
+                <h3 class="text-muted mt-3">No products found</h3>
+                <a href="{{ url_for('parts', category=category) }}" class="btn btn-primary mt-2">
+                    Clear Filters
+                </a>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function updateFilters() {
+    const brand = document.querySelector('input[name="brand"]:checked')?.value || '';
+    const minPrice = document.getElementById('minPrice').value || 0;
+    const maxPrice = document.getElementById('maxPrice').value || '';
+
+    let url = '{{ url_for("parts", category=category) }}';
+    const params = new URLSearchParams();
+
+    if (brand) params.append('brand', brand);
+    if (minPrice > 0) params.append('min_price', minPrice);
+    if (maxPrice) params.append('max_price', maxPrice);
+
+    window.location.href = params.toString() ? url + '?' + params.toString() : url;
+}
+
+function removeFilter(type) {
+    const url = new URL(window.location.href);
+    url.searchParams.delete(type);
+    window.location.href = url;
+}
+
+function clearAllFilters() {
+    window.location.href = '{{ url_for("parts", category=category) }}';
+}
+
+function updatePriceDisplay(value) {
+    document.getElementById('maxPrice').value = value;
+}
+
+function sortProducts(value) {
+    alert("Sorting would occur server-side: " + value);
+}
+</script>
 {% endblock %}
