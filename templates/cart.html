@@ -23,6 +23,13 @@
         <h4>Total: ${{ "%.2f"|format(total) }}</h4>
         <a href="/checkout" class="btn btn-success mt-3">Checkout</a>
     {% endif %}
+    <!-- Flash messages -->
+    {% for message in get_flashed_messages() %}
+    <div class="alert alert-warning mt-3" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" onclick="removeFlash()"></button>
+    </div>
+    {% endfor %}
 </div>
 
 {% endblock %}

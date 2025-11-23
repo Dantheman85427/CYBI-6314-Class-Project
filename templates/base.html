@@ -705,36 +705,41 @@
                                 Components
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{{ url_for('parts') }}">CPUs</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('parts') }}">Motherboards</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('parts') }}">RAM</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('parts') }}">GPUs</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('parts') }}">Storage</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('parts', category='cpus') }}">CPUs</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('parts', category='motherboards') }}">Motherboards</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('parts', category='memory') }}">RAM</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('parts', category='gpus') }}">GPUs</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('parts', category='storage') }}">Storage</a></li>
                             </ul>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Gaming PCs</a>
+                            <a class="nav-link" href="{{ url_for('prebuilt_pcs') }}">Gaming PCs</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Accessories</a>
+                            <a class="nav-link" href="{{ url_for('parts', category='accessories') }}">Accessories</a>
                         </li>
                     </ul>
-                    <form class="d-flex" role="search">
-                        <input class="form-control me-2" type="search" placeholder="Search products..." aria-label="Search">
+                    <!-- Search Form -->
+                    <form class="d-flex" role="search" method="GET" action="{{ url_for('parts') }}">
+                        <input class="form-control me-2"
+                                 type="search"
+                                 name="search"
+                                 placeholder="Search products..."
+                                 aria-label="Search"
+                                 value="{{ request.args.get('search', '') }}">
                         <button class="btn btn-theme-primary" type="submit">
                             <i class="bi bi-search"></i>
                         </button>
                     </form>
+                    <a class="nav-link" href="{{ url_for('cart') }}">
+                        <i class="bi bi-cart3"></i> Cart
+                    </a>
                     <div class="navbar-nav ms-3">
-
                         <a href="{{ url_for('account') }}">
                             <button type="button" class="btn btn-primary">Account</button>
                         </a>
                         <a href="{{ url_for('log_out') }}">
                             <button type="button" class="btn btn-primary">Logout</button>
-                        </a>
-                        <a class="nav-link" href="{{ url_for('cart') }}">
-                            <i class="bi bi-cart3"></i> Cart
                         </a>
                         {% else %}
                             {% if request.endpoint != 'log_in' %}
@@ -764,28 +769,28 @@
                 <div class="col-6 col-md">
                     <h5>Products</h5>
                     <ul class="list-unstyled text-small">
-                        <li><a class="link-secondary text-decoration-none" href="#">CPUs</a></li>
-                        <li><a class="link-secondary text-decoration-none" href="#">Motherboards</a></li>
-                        <li><a class="link-secondary text-decoration-none" href="#">RAM</a></li>
-                        <li><a class="link-secondary text-decoration-none" href="#">Gaming PCs</a></li>
+                        <li><a class="link-secondary text-decoration-none" href="{{ url_for('parts', category='cpus') }}">CPUs</a></li>
+                        <li><a class="link-secondary text-decoration-none" href="{{ url_for('parts', category='motherboards') }}">Motherboards</a></li>
+                        <li><a class="link-secondary text-decoration-none" href="{{ url_for('parts', category='memory') }}">RAM</a></li>
+                        <li><a class="link-secondary text-decoration-none" href="{{ url_for('prebuilt_pcs') }}">Gaming PCs</a></li>
                     </ul>
                 </div>
                 <div class="col-6 col-md">
                     <h5>Support</h5>
                     <ul class="list-unstyled text-small">
-                        <li><a class="link-secondary text-decoration-none" href="#">Build Guides</a></li>
-                        <li><a class="link-secondary text-decoration-none" href="#">Compatibility Checker</a></li>
-                        <li><a class="link-secondary text-decoration-none" href="#">Warranty</a></li>
-                        <li><a class="link-secondary text-decoration-none" href="#">Contact Us</a></li>
+                        <li><a class="link-secondary text-decoration-none" href="{{ url_for('build_guide') }}">Build Guides</a></li>
+                        <li><a class="link-secondary text-decoration-none" href="{{ url_for('compatibility_checker') }}">Compatibility Checker</a></li>
+                        <li><a class="link-secondary text-decoration-none" href="{{ url_for('warranty') }}">Warranty</a></li>
+                        <li><a class="link-secondary text-decoration-none" href="{{ url_for('contact_us') }}">Contact Us</a></li>
                     </ul>
                 </div>
                 <div class="col-6 col-md">
                     <h5>Company</h5>
                     <ul class="list-unstyled text-small">
-                        <li><a class="link-secondary text-decoration-none" href="#">About</a></li>
-                        <li><a class="link-secondary text-decoration-none" href="#">Careers</a></li>
-                        <li><a class="link-secondary text-decoration-none" href="#">Locations</a></li>
-                        <li><a class="link-secondary text-decoration-none" href="#">Privacy Policy</a></li>
+                        <li><a class="link-secondary text-decoration-none" href="{{ url_for('about_us') }}">About Us</a></li>
+                        <li><a class="link-secondary text-decoration-none" href="{{ url_for('careers') }}">Careers</a></li>
+                        <li><a class="link-secondary text-decoration-none" href="{{ url_for('locations') }}">Locations</a></li>
+                        <li><a class="link-secondary text-decoration-none" href="{{ url_for('privacy_policy') }}">Privacy Policy</a></li>
                     </ul>
                 </div>
             </div>
@@ -797,6 +802,12 @@
 
     <!-- Fixed Theme toggle script -->
     <script>
+        function removeFlash() {
+        const element = document.getElementById('div_flash');
+        if (element) {
+            element.remove();
+        }
+        }
        (() => {
             'use strict'
             const storedTheme = localStorage.getItem('theme')

@@ -12,6 +12,7 @@
     {% for message in get_flashed_messages() %}
     <div class="alert alert-warning mt-3" role="alert">
         {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" onclick="removeFlash()"></button>
     </div>
     {% endfor %}
     {% if form.userid.data %}

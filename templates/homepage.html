@@ -21,7 +21,7 @@
                 <div class="carousel-caption text-start">
                     <h1>Build Your Dream Gaming Rig</h1>
                     <p class="opacity-75">Premium components for maximum performance. From CPUs to GPUs, we have everything you need.</p>
-                    <p><a class="btn btn-lg btn-primary" href="#">Shop Components</a></p>
+                    <p><a class="btn btn-lg btn-primary" href="{{ url_for('parts') }}">Shop Components</a></p>
                 </div>
             </div>
         </div>
@@ -31,7 +31,7 @@
                 <div class="carousel-caption">
                     <h1>Ready-to-Play Gaming PCs</h1>
                     <p>Pre-built systems optimized for gaming, streaming, and content creation.</p>
-                    <p><a class="btn btn-lg btn-primary" href="#">View Gaming PCs</a></p>
+                    <p><a class="btn btn-lg btn-primary" href="{{ url_for('prebuilt_pcs') }}">View Gaming PCs</a></p>
                 </div>
             </div>
         </div>
@@ -41,7 +41,7 @@
                 <div class="carousel-caption text-end">
                     <h1>Expert PC Building Support</h1>
                     <p>Our team of specialists will help you choose the perfect components for your needs and budget.</p>
-                    <p><a class="btn btn-lg btn-primary" href="#">Get Expert Advice</a></p>
+                    <p><a class="btn btn-lg btn-primary" href="{{ url_for('build_guide') }}">Get Expert Advice</a></p>
                 </div>
             </div>
         </div>
@@ -62,6 +62,7 @@
         {% for message in get_flashed_messages() %}
         <div class="alert alert-warning mt-3" role="alert">
             {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" onclick="removeFlash()"></button>
         </div>
         {% endfor %}
         <div class="part-category">
@@ -74,7 +75,7 @@
                         <i class="bi bi-cpu category-icon"></i>
                         <h3 class="h4">Processors</h3>
                         <p>Latest generation CPUs from Intel and AMD for gaming and productivity.</p>
-                        <a href="#" class="btn btn-outline-primary">Shop CPUs</a>
+                        <a href="{{ url_for('parts', category='cpus') }}" class="btn btn-outline-primary">Shop CPUs</a>
                     </div>
                 </div>
             </div>
@@ -84,7 +85,7 @@
                         <i class="bi bi-motherboard category-icon"></i>
                         <h3 class="h4">Motherboards</h3>
                         <p>Compatible boards for your CPU with advanced features and connectivity.</p>
-                        <a href="#" class="btn btn-outline-primary">Shop Motherboards</a>
+                        <a href="{{ url_for('parts', category='motherboards') }}" class="btn btn-outline-primary">Shop Motherboards</a>
                     </div>
                 </div>
             </div>
@@ -94,7 +95,7 @@
                         <i class="bi bi-memory category-icon"></i>
                         <h3 class="h4">Memory</h3>
                         <p>High-speed DDR4 and DDR5 RAM kits for optimal system performance.</p>
-                        <a href="#" class="btn btn-outline-primary">Shop RAM</a>
+                        <a href="{{ url_for('parts', category='memory') }}" class="btn btn-outline-primary">Shop RAM</a>
                     </div>
                 </div>
             </div>
@@ -104,7 +105,7 @@
                         <i class="bi bi-pc-display category-icon"></i>
                         <h3 class="h4">Gaming PCs</h3>
                         <p>Pre-built systems optimized for gaming, streaming, and content creation.</p>
-                        <a href="#" class="btn btn-outline-primary">Shop PCs</a>
+                        <a href="{{ url_for('prebuilt_pcs') }}" class="btn btn-outline-primary">Shop PCs</a>
                     </div>
                 </div>
             </div>
@@ -116,7 +117,7 @@
             <div class="col-md-7">
                 <h2 class="featurette-heading fw-normal lh-1">Latest Generation CPUs. <span class="text-body-secondary">Unleash maximum performance.</span></h2>
                 <p class="lead">Experience next-level computing with our selection of Intel Core i9 and AMD Ryzen processors. Built for gamers, creators, and professionals who demand the best. Multi-core performance, higher clock speeds, and advanced architecture for your most demanding tasks.</p>
-                <a href="#" class="btn btn-primary">View CPU Collection</a>
+                <a href="{{ url_for('parts', category='cpus') }}" class="btn btn-primary">View CPU Collection</a>
             </div>
             <div class="col-md-5">
                 <div class="bg-light rounded p-4 text-center">
@@ -131,7 +132,7 @@
             <div class="col-md-7 order-md-2">
                 <h2 class="featurette-heading fw-normal lh-1">High-Speed Memory. <span class="text-body-secondary">Boost your system's performance.</span></h2>
                 <p class="lead">Upgrade your rig with our premium DDR4 and DDR5 memory modules. From 16GB kits for everyday computing to 128GB kits for professional workstations, we have the perfect RAM for your needs. Low latency, high frequency, and RGB lighting options available.</p>
-                <a href="#" class="btn btn-primary">Explore RAM Options</a>
+                <a href="{{ url_for('parts', category='memory') }}" class="btn btn-primary">Explore RAM Options</a>
             </div>
             <div class="col-md-5 order-md-1">
                 <div class="bg-light rounded p-4 text-center">
@@ -146,7 +147,7 @@
             <div class="col-md-7">
                 <h2 class="featurette-heading fw-normal lh-1">Premium Motherboards. <span class="text-body-secondary">The foundation of your build.</span></h2>
                 <p class="lead">Choose from our extensive selection of motherboards from top brands like ASUS, MSI, and Gigabyte. Whether you need an ATX board with extensive connectivity or a compact ITX board for a small form factor build, we have options for every need and budget.</p>
-                <a href="#" class="btn btn-primary">Browse Motherboards</a>
+                <a href="{{ url_for('parts', category='motherboards') }}" class="btn btn-primary">Browse Motherboards</a>
             </div>
             <div class="col-md-5">
                 <div class="bg-light rounded p-4 text-center">

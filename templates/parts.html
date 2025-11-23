@@ -33,7 +33,9 @@
 <div class="px-4 py-5 text-center text-light category-hero border-bottom"
      style="background-image: url('https://images.unsplash.com/photo-1604754742629-3e5728249d73?auto=format&w=1600&q=60');">
     <h1 class="display-4 fw-bold text-primary">
-        {% if category %}
+        {% if search_term %}
+            Search Results for "{{ search_term }}"
+        {% elif category %}
             {{ category_name|upper if category_name else category|replace('-', ' ')|upper }}
         {% else %}
             ALL PC PARTS
@@ -43,7 +45,9 @@
     <div class="col-lg-6 mx-auto">
         <p class="lead opacity-75">
 
-        {% if category == 'cpus' %}
+        {% if search_term %}
+            Found {{ products|length }} products matching "{{ search_term }}"
+        {% elif category == 'cpus' %}
             High-performance processors for gaming and productivity
         {% elif category == 'gpus' %}
             Powerful graphics cards for gaming and creative work
@@ -66,9 +70,16 @@
         {% endif %}
 
         </p>
+
+        {% if search_term %}
+        <a href="{{ url_for('parts') }}" class="btn btn-outline-light mt-3">
+            <i class="bi bi-arrow-left me-2"></i>View All Products
+        </a>
+        {% else %}
         <span class="badge text-bg-primary px-3 py-2 mt-3">
             {{ products|length }} products found
         </span>
+        {% endif %}
     </div>
 </div>
 
@@ -76,6 +87,13 @@
 <!--          CONTENT          -->
 <!-- ========================= -->
 <div class="container my-5">
+    <!-- Flash messages -->
+    {% for message in get_flashed_messages() %}
+    <div class="alert alert-warning mt-3" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" onclick="removeFlash()"></button>
+    </div>
+    {% endfor %}
     <div class="row g-4">
 
         <!-- ========================= -->
@@ -92,6 +110,13 @@
                     {% if brand_filter or min_price > 0 or (max_price is not none and max_price < 2000) %}
                         <h6 class="text-muted mb-2">Active Filters:</h6>
                         <div class="d-flex flex-wrap gap-2 mb-4">
+
+                            {% if search_term %}
+                            <span class="badge rounded-pill text-bg-primary d-inline-flex align-items-center">
+                                Search: "{{ search_term }}"
+                                <i class="bi bi-x ms-2" style="cursor:pointer;" onclick="removeFilter('search')"></i>
+                            </span>
+                            {% endif %}
 
                             {% if brand_filter %}
                             <span class="badge rounded-pill text-bg-primary d-inline-flex align-items-center">
@@ -120,6 +145,23 @@
                             </span>
                         </div>
                     {% endif %}
+
+                    <!-- Search Filter -->
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-3">Search</h6>
+                        <div class="input-group input-group-sm">
+                            <input type="text"
+                                   class="form-control"
+                                   placeholder="Search products..."
+                                   id="searchInput"
+                                   value="{{ search_term }}"
+                                   onkeypress="if(event.keyCode==13) updateFilters()">
+                            <button class="btn btn-outline-secondary" type="button" onclick="updateFilters()">
+                                <i class="bi bi-search"></i>
+                            </button> 
+                        </div>
+                    </div>
+                    <hr>
 
                     <!-- Brand Filter -->
                     {% if brands %}
@@ -250,6 +292,7 @@
                         <div class="card">
                             <div class="card-body">
                                 <h5 class="card-title">{{ product.product_Name }}</h5>
+                                <p class="card-text">{{ product.product_Brand }}</p>
                                 <p class="card-text">${{ "%.2f"|format(product.product_Price) }}</p>
                                 <p class="card-text">{{ product.product_Description }}</p>
                                 <a href="{{ url_for('add_to_cart', product_id=product.product_ID) }}" 
@@ -284,10 +327,12 @@ function updateFilters() {
     const brand = document.querySelector('input[name="brand"]:checked')?.value || '';
     const minPrice = document.getElementById('minPrice').value || 0;
     const maxPrice = document.getElementById('maxPrice').value || '';
+    const searchTerm = document.getElementById('searchInput').value || '';
 
     let url = '{{ url_for("parts", category=category) }}';
     const params = new URLSearchParams();
 
+    if (searchTerm) params.append('search', searchTerm);
     if (brand) params.append('brand', brand);
     if (minPrice > 0) params.append('min_price', minPrice);
     if (maxPrice) params.append('max_price', maxPrice);

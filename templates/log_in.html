@@ -100,10 +100,11 @@
             <div class="text-center my-3">
                 <a href="{{ url_for('forgotpw') }}" class="text-decoration-none">Forgot password?</a>
             </div>
-                        <!-- Flash messages -->
+            <!-- Flash messages -->
             {% for message in get_flashed_messages() %}
             <div class="alert alert-warning mt-3" role="alert">
                 {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" onclick="removeFlash()"></button>
             </div>
             {% endfor %}
             <hr class="my-4">

@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}Compatibility Checker - PC Parts Store{% endblock %}
+
+{% block head %}
+{% endblock %}
+
+{% block body %}
+    <!-- Flash messages -->
+    {% for message in get_flashed_messages() %}
+    <div class="alert alert-warning mt-3" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" onclick="removeFlash()"></button>
+    </div>
+    {% endfor %}
+{% endblock %}

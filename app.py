@@ -4,7 +4,7 @@ from flask_sqlalchemy import SQLAlchemy #pip install Flask-SQLAlchemy
 from pathlib import Path
 from argon2 import PasswordHasher       #pip install argon2-cffi
 from flask_wtf import FlaskForm         #pip install flask-wtf
-import os, string
+import stripe, os, string
 from sqlalchemy import Text
 from wtforms import StringField, SubmitField, EmailField, DateField, IntegerField, FloatField, TextAreaField, SelectField, FileField
 from wtforms.validators import data_required, ValidationError, Optional
@@ -16,6 +16,9 @@ load_dotenv()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'fallback-insecure-key-change-in-production')
+# Read from file
+stripe.api_key = os.getenv("SK_TEST")
+STRIPE_PK = os.getenv("PK_TEST")
 
 #Configuring the Database location
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', f"sqlite:///{Path(__file__).parent / './Databases/userAccounts.db'}")
@@ -484,6 +487,23 @@ def parts(category=None):
         product_type = category_mapping[category]
         query = query.filter(Products.product_Type == product_type)
     
+    # Get search term from request (sanitized)
+    search_term = request.args.get('search', '').strip()
+
+    # Apply search filter if provided
+    if search_term:
+        # Sanitize search term
+        import re
+        sanitized_search = re.sub(r'[^\w\s\-\.]', '', search_term)
+        if sanitized_search:
+            # Search in name, brand, and description using case-insensitive matching
+            search_filter = db.or_(
+                Products.product_Name.ilike(f'%{sanitized_search}%'),
+                Products.product_Brand.ilike(f'%{sanitized_search}%'),
+                Products.product_Description.ilike(f'%{sanitized_search}%')
+            )
+            query = query.filter(search_filter)
+
     # Get brand filter from request
     brand_filter = request.args.get('brand')
     if brand_filter:
@@ -520,7 +540,8 @@ def parts(category=None):
                          category_name=category_name,
                          brand_filter=brand_filter,
                          min_price=min_price or 0,
-                         max_price=max_price)
+                         max_price=max_price,
+                         search_term=search_term)
 
 
 #======================= Cart =======================#
@@ -593,7 +614,7 @@ def checkout():
     for item in cart.items:
         product = Products.query.get(item.product_id)
         if product.product_Stock < item.quantity:
-            flash(f"Not Enough for {product.product_Name}.")
+            flash(f"We apologize! We only have {product.product_Stock} in stock for {product.product_Name}. Please reduce the quantity in your cart.")
             db.session.rollback()
             return redirect(url_for('cart'))
         
@@ -884,11 +905,77 @@ def admin():
                          products=products,
                          selected_type=selected_type)
 
+#======================= Build Guide =======================#
+@app.route('/Homepage/Build_Guide')
+@logged_in_required()
+def build_guide():
+    flash("Hello Welcome to the Build Guide! This feature is coming soon!")
+    return render_template('build_guide.html')
+
+#======================= PreBuilt_PCs =======================#
+@app.route('/Homepage/PreBuilt_PCs')
+@logged_in_required()
+def prebuilt_pcs():
+    flash("Hello Welcome to the PreBuilt_PCs! This feature is coming soon!")
+    return render_template('prebuilt_pcs.html')
+
+#======================= Compatibility_Checker =======================#
+@app.route('/Homepage/Compatibility_Checker')
+@logged_in_required()
+def compatibility_checker():
+    flash("Hello Welcome to the Compatibility_Checker! This feature is coming soon!")
+    return render_template('compatibility_checker.html')
+
+#======================= Warranty =======================#
+@app.route('/Homepage/Warranty')
+@logged_in_required()
+def warranty():
+    flash("Hello Welcome to the Warranty! This feature is coming soon!")
+    return render_template('warranty.html')
+
+#======================= Contact_Us =======================#
+@app.route('/Homepage/Contact_Us')
+@logged_in_required()
+def contact_us():
+    flash("Hello Welcome to the Contact_Us! This feature is coming soon!")
+    return render_template('contact_us.html')
+
+#======================= About_Us =======================#
+@app.route('/Homepage/About_Us')
+@logged_in_required()
+def about_us():
+    flash("Hello Welcome to the About_Us! This feature is coming soon!")
+    return render_template('about_us.html')
+
+#======================= Careers =======================#
+@app.route('/Homepage/Careers')
+@logged_in_required()
+def careers():
+    flash("Hello Welcome to the Careers! This feature is coming soon!")
+    return render_template('careers.html')
+
+#======================= Locations =======================#
+@app.route('/Homepage/Locations')
+@logged_in_required()
+def locations():
+    flash("Hello Welcome to the Locations! This feature is coming soon!")
+    return render_template('locations.html')
+
+#======================= Privacy_Policy =======================#
+@app.route('/Homepage/Privacy_Policy')
+@logged_in_required()
+def privacy_policy():
+    flash("Hello Welcome to the Privacy_Policy! This feature is coming soon!")
+    return render_template('privacy_policy.html')
+
 #======================= Logout =======================#
 @app.route('/logout')
 @logged_in_required()
 def log_out():
     session.pop('username')
+    session.pop('user_id')
+    session.pop('cart', None)
+    session.modified = True
     flash("You have been logged out.")
     return redirect(url_for('log_in'))
 
