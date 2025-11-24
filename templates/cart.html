@@ -7,42 +7,104 @@
 {% block body %}
 
 <div class="container mt-4">
-    <h2>Your Cart</h2>
+    <div class="d-flex justify-content-between align-items-center">
+        <h2>Your Cart</h2>
+        {% if items %}
+        <a href="{{ url_for('empty_cart') }}" 
+           class="btn btn-outline-danger btn-sm"
+           onclick="return confirm('Are you sure you want to empty your cart?')">
+            Empty Cart
+        </a>
+        {% endif %}
+    </div>
     <hr>
 
     {% if not items %}
-        <p>Your cart is empty.</p>
+        <div class="alert alert-info">
+            <p class="mb-0">Your cart is empty. <a href="/Homepage/Parts">Start shopping!</a></p>
+        </div>
     {% else %}
         <ul class="list-group mb-4">
             {% for item in items %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                    <strong>{{ item.product.product_Name }}</strong><br>
-                    Qty: {{ item.quantity }}
+            <li class="list-group-item">
+                <div class="row align-items-center">
+                    <!-- Product image and info -->
+                    <div class="col-md-6 d-flex align-items-center">
+                        <img src="{{ item.product.product_Image if item.product.product_Image else url_for('static', filename='images/default_product.png') }}"
+                             alt="{{ item.product.product_Name }}"
+                             style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; margin-right: 15px;">
+                        <div>
+                            <strong>{{ item.product.product_Name }}</strong><br>
+                            <small class="text-muted">${{ "%.2f"|format(item.product.product_Price) }} each</small>
+                        </div>
+                    </div>
+                    
+                    <!-- Quantity controls -->
+                    <div class="col-md-3">
+                        <div class="d-flex align-items-center">
+                            <a href="{{ url_for('decrease_quantity', item_id=item.item_id) }}" 
+                               class="btn btn-sm btn-outline-secondary">
+                                -
+                            </a>
+                            <span class="mx-3"><strong>{{ item.quantity }}</strong></span>
+                            <a href="{{ url_for('increase_quantity', item_id=item.item_id) }}" 
+                               class="btn btn-sm btn-outline-secondary">
+                                +
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Price and remove button -->
+                    <div class="col-md-3 text-end">
+                        <div class="mb-2">
+                            <strong>${{ "%.2f"|format(item.product.product_Price * item.quantity) }}</strong>
+                        </div>
+                        <a href="{{ url_for('remove_item', item_id=item.item_id) }}" 
+                           class="btn btn-sm btn-danger"
+                           onclick="return confirm('Remove this item from cart?')">
+                            Remove
+                        </a>
+                    </div>
                 </div>
-                <span>${{ "%.2f"|format(item.product.product_Price * item.quantity) }}</span>
             </li>
             {% endfor %}
         </ul>
 
-        <h4>Total: ${{ "%.2f"|format(total) }}</h4>
-        <button id="checkout-button" class="btn btn-success mt-3">
-            <i class="bi bi-credit-card me-2"></i>Checkout with Stripe
-        </button>
-        {% endif %}
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Cart Summary</h4>
+                <hr>
+                <div class="d-flex justify-content-between mb-3">
+                    <span>Subtotal ({{ items|length }} item{% if items|length != 1 %}s{% endif %})</span>
+                    <strong>${{ "%.2f"|format(total) }}</strong>
+                </div>
+                <button id="checkout-button" class="btn btn-success w-100">
+                    <i class="bi bi-credit-card me-2"></i>Checkout with Stripe
+                </button>
+            </div>
+        </div>
+    {% endif %}
+
     <!-- Flash messages -->
-    {% for message in get_flashed_messages() %}
-    <div class="alert alert-warning mt-3" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" onclick="removeFlash()"></button>
-    </div>
-    {% endfor %}
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-info alert-dismissible fade show mt-3" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
 </div>
+
+{% endblock %}
+
 {% block scripts %}
 <script>
     const stripe = Stripe('{{ key }}');
     
-    document.getElementById('checkout-button').addEventListener('click', async () => {
+    document.getElementById('checkout-button')?.addEventListener('click', async () => {
         try {
             const response = await fetch('/checkout', {
                 method: 'POST',
@@ -72,5 +134,4 @@
         }
     });
 </script>
-{% endblock %}
 {% endblock %}

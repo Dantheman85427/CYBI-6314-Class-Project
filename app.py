@@ -594,7 +594,101 @@ def cart():
     print(f"DEBUG: Cart items: {len(cart.items)}, Total: {total}")  # Debug line
 
     return render_template('cart.html', items=cart.items, total=total, key=stripe_keys['publishable_key'])
+#======================= Cart Alteration =======================#
+
+@app.route('/cart/increase/<int:item_id>')
+@logged_in_required()
+def increase_quantity(item_id):
+    # Increases quantity by 1
+    user_id = session['user_id']
     
+    # Find the cart item
+
+    cart_item = CartItem.query.get(item_id)
+
+    if not cart_item:
+        flash('Item not found!')
+        return redirect(url_for('cart'))
+    
+    # Security checks
+    if cart_item.cart.user_id != user_id:
+        flash('Unauthorized action')
+        return redirect(url_for('cart'))
+    cart_item.quantity += 1
+    db.session.commit()
+    flash('Quantity increased!')
+    return redirect(url_for('cart'))
+
+# ==== Decrease ==== #
+@app.route('/cart/decrease/<int:item_id>')
+@logged_in_required()
+def decrease_quantity(item_id):
+    user_id = session['user_id']
+    
+    # Find the cart item
+    cart_item = CartItem.query.get(item_id)
+    
+    if not cart_item:
+        flash('Item not found')
+        return redirect(url_for('cart'))
+    
+    # Security check: make sure this item belongs to the current user's cart
+    if cart_item.cart.user_id != user_id:
+        flash('Unauthorized action')
+        return redirect(url_for('cart'))
+    
+    # Decrease quantity
+    if cart_item.quantity > 1:
+        cart_item.quantity -= 1
+        db.session.commit()
+        flash('Quantity decreased')
+    else:
+        # If quantity is 1, remove the item entirely
+        db.session.delete(cart_item)
+        db.session.commit()
+        flash('Item removed from cart')
+    
+    return redirect(url_for('cart'))
+
+# ==== Remove ==== #
+@app.route('/cart/remove/<int:item_id>')
+@logged_in_required()
+def remove_item(item_id):
+    user_id = session['user_id']
+    
+    cart_item = CartItem.query.get(item_id)
+    
+    if not cart_item:
+        flash('Item not found')
+        return redirect(url_for('cart'))
+    
+    # Security check
+    if cart_item.cart.user_id != user_id:
+        flash('Unauthorized action')
+        return redirect(url_for('cart'))
+    
+    product_name = cart_item.product.product_Name
+    db.session.delete(cart_item)
+    db.session.commit()
+    flash(f'{product_name} removed from cart')
+    
+    return redirect(url_for('cart'))
+# ==== Empty cart ==== #
+@app.route('/cart/empty')
+@logged_in_required()
+def empty_cart():
+
+    user_id = session['user_id']
+    
+    cart = Cart.query.filter_by(user_id=user_id).first()
+    
+    if cart:
+        # Delete all cart items
+        CartItem.query.filter_by(cart_id=cart.cart_id).delete()
+        db.session.commit()
+        flash('Cart emptied')
+    
+    return redirect(url_for('cart'))
 #======================= Cart --> Orders =======================#
 @app.route('/checkout', methods=['POST'])
 @logged_in_required()
