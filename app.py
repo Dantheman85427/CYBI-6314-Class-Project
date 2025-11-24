@@ -17,8 +17,11 @@ load_dotenv()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'fallback-insecure-key-change-in-production')
 # Read from file
-stripe.api_key = os.getenv("SK_TEST")
-STRIPE_PK = os.getenv("PK_TEST")
+stripe_keys = {
+    "secret_key": os.environ["SK_TEST"],
+    "publishable_key": os.environ["PK_TEST"],
+}
+stripe.api_key = stripe_keys["secret_key"]
 
 #Configuring the Database location
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', f"sqlite:///{Path(__file__).parent / './Databases/userAccounts.db'}")
@@ -590,55 +593,127 @@ def cart():
     total = sum(item.product.product_Price * item.quantity for item in cart.items)
     print(f"DEBUG: Cart items: {len(cart.items)}, Total: {total}")  # Debug line
 
-    return render_template('cart.html', items=cart.items, total=total)
+    return render_template('cart.html', items=cart.items, total=total, key=stripe_keys['publishable_key'])
     
 #======================= Cart --> Orders =======================#
-@app.route('/checkout')
+@app.route('/checkout', methods=['POST'])
 @logged_in_required()
 def checkout():
-    user_id = session['user_id']
-    cart = Cart.query.filter_by(user_id=user_id).first()
+    try: 
+        user_id = session['user_id']
+        cart = Cart.query.filter_by(user_id=user_id).first()
 
-    if not cart or len(cart.items) == 0:
-        flash("Cart is empty.")
+        if not cart or len(cart.items) == 0:
+            flash("Cart is empty.")
+            return redirect(url_for('cart'))
+        # Move each cart item to OrderItem
+        for item in cart.items:
+            product = Products.query.get(item.product_id)
+            if product.product_Stock < item.quantity:
+                flash(f"We apologize! We only have {product.product_Stock} in stock for {product.product_Name}. Please reduce the quantity in your cart.")
+                db.session.rollback()
+                return redirect(url_for('cart'))
+        line_items = []
+        for item in cart.items:
+            product = Products.query.get(item.product_id)
+            line_items.append({
+                'price_data': {
+                    'currency': 'usd',
+                    'product_data': {
+                        'name': product.product_Name,
+                        'description': f"Brand: {product.product_Brand}",
+                    },
+                    'unit_amount': int(product.product_Price * 100),  # Amount in cents
+                },
+                'quantity': item.quantity,
+            })
+        checkout_session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=line_items,
+            mode='payment',
+            success_url=url_for('payment_success', _external=True) + '?session_id={CHECKOUT_SESSION_ID}',
+            cancel_url=url_for('cart', _external=True),
+            metadata={
+                'user_id': str(user_id),
+                'cart_id': str(cart.cart_id)
+            }
+        )
+        return jsonify({'id': checkout_session.id})
+    
+    except Exception as e:
+        print(f"Error creating checkout session: {e}")
+        flash("An error occurred while processing your payment. Please try again.")
         return redirect(url_for('cart'))
-
-    # Create an order
-    order = Orders(user_id=user_id, total_price=0.0)
-    db.session.add(order)
-    db.session.commit()
-
-    total_price = 0
-
-    # Move each cart item to OrderItem
-    for item in cart.items:
-        product = Products.query.get(item.product_id)
-        if product.product_Stock < item.quantity:
-            flash(f"We apologize! We only have {product.product_Stock} in stock for {product.product_Name}. Please reduce the quantity in your cart.")
-            db.session.rollback()
+    
+@app.route('/payment_success')
+@logged_in_required()
+def payment_success():
+    try: 
+        stripe_session_id = request.args.get('session_id')
+        if not stripe_session_id:
+            flash('Invalid payment session.')
             return redirect(url_for('cart'))
         
-        # Decrease product stock
-        product.product_Stock -= item.quantity
+        # Retrieve the Stripe session
+        stripe_checkout_session = stripe.checkout.Session.retrieve(stripe_session_id)
 
-        order_item = OrderItem(
-            order_id=order.order_id,
-            product_id=item.product_id,
-            quantity=item.quantity,
-            price_each=item.product.product_Price
-        )
-        db.session.add(order_item)
+        if stripe_checkout_session.payment_status != 'paid':
+            flash('Payment was not successful.')
+            return redirect(url_for('cart'))
+        
+        user_id = session['user_id']
+        cart = Cart.query.filter_by(user_id=user_id).first()
 
-        total_price += item.product.product_Price * item.quantity
+        if not cart:
+            flash("Cart not found.")
+            return redirect(url_for('cart'))   
+        
+        # Verify the Stripe session matches our user
+        if int(stripe_checkout_session.metadata.get('user_id')) != user_id:
+            flash('Payment session user mismatch.')
+            return redirect(url_for('cart'))
 
-    order.total_price = total_price
+        # Create an order
+        order = Orders(user_id=user_id, total_price=0.0)
+        db.session.add(order)
+        db.session.commit()
 
-    # Clear cart
-    CartItem.query.filter_by(cart_id=cart.cart_id).delete()
-    db.session.commit()
+        total_price = 0
 
-    flash("Order placed successfully!")
-    return redirect(url_for('orders'))
+        # Move each cart item to OrderItem
+        for item in cart.items:
+            product = Products.query.get(item.product_id)
+            if product.product_Stock < item.quantity:
+                flash(f"We apologize! We only have {product.product_Stock} in stock for {product.product_Name}. Please reduce the quantity in your cart.")
+                db.session.rollback()
+                return redirect(url_for('cart'))
+            
+            # Decrease product stock
+            product.product_Stock -= item.quantity
+
+            order_item = OrderItem(
+                order_id=order.order_id,
+                product_id=item.product_id,
+                quantity=item.quantity,
+                price_each=item.product.product_Price
+            )
+            db.session.add(order_item)
+
+            total_price += item.product.product_Price * item.quantity
+
+        order.total_price = total_price
+
+        # Clear cart
+        CartItem.query.filter_by(cart_id=cart.cart_id).delete()
+        db.session.commit()
+
+        flash("Payment successful! Your order has been placed.")
+        return redirect(url_for('orders'))
+    except Exception as e:
+        print(f"Error processing payment success: {e}")
+        db.session.rollback() # Rollback any database changes
+        flash("An error occurred while finalizing your order. Please contact support.")
+        return redirect(url_for('cart'))
 
 
 @app.route('/Homepage/Orders')

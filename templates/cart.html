@@ -1,4 +1,9 @@
 {% extends 'base.html' %}
+
+{% block head %}
+    <script src="https://js.stripe.com/v3/"></script>
+{% endblock %}
+
 {% block body %}
 
 <div class="container mt-4">
@@ -21,8 +26,10 @@
         </ul>
 
         <h4>Total: ${{ "%.2f"|format(total) }}</h4>
-        <a href="/checkout" class="btn btn-success mt-3">Checkout</a>
-    {% endif %}
+        <button id="checkout-button" class="btn btn-success mt-3">
+            <i class="bi bi-credit-card me-2"></i>Checkout with Stripe
+        </button>
+        {% endif %}
     <!-- Flash messages -->
     {% for message in get_flashed_messages() %}
     <div class="alert alert-warning mt-3" role="alert">
@@ -31,5 +38,39 @@
     </div>
     {% endfor %}
 </div>
+{% block scripts %}
+<script>
+    const stripe = Stripe('{{ key }}');
+    
+    document.getElementById('checkout-button').addEventListener('click', async () => {
+        try {
+            const response = await fetch('/checkout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
 
+            const session = await response.json();
+            
+            if (session.error) {
+                alert(`Error: ${session.error}`);
+                return;
+            }
+
+            // Redirect to Stripe Checkout
+            const result = await stripe.redirectToCheckout({
+                sessionId: session.id
+            });
+
+            if (result.error) {
+                alert(result.error.message);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred during checkout');
+        }
+    });
+</script>
+{% endblock %}
 {% endblock %}
