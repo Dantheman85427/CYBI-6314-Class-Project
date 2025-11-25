@@ -14,25 +14,38 @@
     .product-card {
         transition: transform .3s ease;
     }
-    /* Hero background dimming for contrast */
+    /* Hero background - uses theme colors */
     .category-hero {
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
         background-blend-mode: multiply;
-        background-color: rgba(0, 0, 0, .55);
+        background-color: var(--bs-carousel-bg); /* Uses theme's carousel overlay color */
+    }
+    
+    /* Make hero text use theme colors */
+    .category-hero h1 {
+        color: var(--bs-caption-text) !important; /* Uses theme's caption text color */
+    }
+    
+    .category-hero .lead {
+        color: var(--bs-caption-text);
+        opacity: 0.9;
+    }
+    /* Theme-aware badge */
+    .badge-theme {
+        background-color: var(--bs-primary) !important;
+        color: #ffffff !important;
     }
 </style>
 {% endblock %}
 
 {% block body %}
 
-<!-- ========================= -->
 <!--   HERO / CATEGORY HEADER  -->
-<!-- ========================= -->
-<div class="px-4 py-5 text-center text-light category-hero border-bottom"
+<div class="px-4 py-5 text-center category-hero border-bottom"
      style="background-image: url('https://images.unsplash.com/photo-1604754742629-3e5728249d73?auto=format&w=1600&q=60');">
-    <h1 class="display-4 fw-bold text-primary">
+    <h1 class="display-4 fw-bold">
         {% if search_term %}
             Search Results for "{{ search_term }}"
         {% elif category %}
@@ -43,7 +56,7 @@
     </h1>
 
     <div class="col-lg-6 mx-auto">
-        <p class="lead opacity-75">
+        <p class="lead">
 
         {% if search_term %}
             Found {{ products|length }} products matching "{{ search_term }}"
@@ -76,29 +89,26 @@
             <i class="bi bi-arrow-left me-2"></i>View All Products
         </a>
         {% else %}
-        <span class="badge text-bg-primary px-3 py-2 mt-3">
+        <span class="badge badge-theme">
             {{ products|length }} products found
         </span>
         {% endif %}
     </div>
 </div>
 
-<!-- ========================= -->
-<!--          CONTENT          -->
-<!-- ========================= -->
+<!--CONTENT -->
 <div class="container my-5">
     <!-- Flash messages -->
     {% for message in get_flashed_messages() %}
-    <div class="alert alert-warning mt-3" role="alert">
+    <div class="alert alert-warning alert-dismissible fade show mt-3" role="alert">
         {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" onclick="removeFlash()"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     {% endfor %}
+    
     <div class="row g-4">
 
-        <!-- ========================= -->
         <!--        FILTER SIDEBAR     -->
-        <!-- ========================= -->
         <div class="col-lg-3">
             <div class="card shadow-sm sticky-top" style="top: 2rem;">
                 <div class="card-body">
@@ -179,22 +189,52 @@
 
                     <!-- Price Filter -->
                     <h6 class="text-muted mb-3">Price Range</h6>
-                    <input type="range" class="form-range"
-                           min="0" max="2000"
-                           value="{{ max_price if max_price is not none and max_price < 2000 else 2000 }}"
-                           oninput="updatePriceDisplay(this.value)">
-
+                    
+                    <!-- Display current range -->
+                    <div class="text-center mb-2">
+                        <span class="badge text-bg-secondary">
+                            $<span id="minDisplay">{{ min_price }}</span> - $<span id="maxDisplay">{{ max_price if max_price is not none else 2000 }}</span>
+                        </span>
+                    </div>
+                    
+                    <!-- Separate sliders with labels -->
+                    <div class="mb-3">
+                        <label class="form-label small">Minimum: $<span id="minLabel">{{ min_price }}</span></label>
+                        <input type="range" class="form-range"
+                               id="minSlider"
+                               min="0" max="2000" step="10"
+                               value="{{ min_price }}"
+                               oninput="updateMinSlider(this.value)">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label small">Maximum: $<span id="maxLabel">{{ max_price if max_price is not none else 2000 }}</span></label>
+                        <input type="range" class="form-range"
+                               id="maxSlider"
+                               min="0" max="2000" step="10"
+                               value="{{ max_price if max_price is not none else 2000 }}"
+                               oninput="updateMaxSlider(this.value)">
+                    </div>
+                    
+                    <!-- Number inputs for precise control -->
                     <div class="d-flex gap-2 mt-2">
                         <input type="number" id="minPrice"
                                class="form-control form-control-sm"
-                               placeholder="Min" value="{{ min_price }}"
-                               onchange="updateFilters()">
+                               placeholder="Min" 
+                               value="{{ min_price }}"
+                               min="0" max="2000"
+                               onchange="syncSliders()">
                         <input type="number" id="maxPrice"
                                class="form-control form-control-sm"
                                placeholder="Max"
-                               value="{{ max_price if max_price is not none else '' }}"
-                               onchange="updateFilters()">
+                               value="{{ max_price if max_price is not none else 2000 }}"
+                               min="0" max="2000"
+                               onchange="syncSliders()">
                     </div>
+                    
+                    <button class="btn btn-sm btn-primary w-100 mt-2" onclick="updateFilters()">
+                        Apply Price Filter
+                    </button>
 
                     <hr>
 
@@ -283,26 +323,35 @@
                 <div class="col">
                     <div class="card shadow-sm border-0 h-100 product-card">
 
-                        {% set img_path = product.product_Image.replace('\\', '/') if product.product_Image else 'images/default.png' %}
-                        <img src="{{ url_for('static', filename=product.product_Image.replace('static/', '')) }}"
+                        <img src="{{ url_for('static', filename=product.product_Image.replace('static/', '')) if product.product_Image else url_for('static', filename='images/default.png') }}"
                              class="card-img-top"
                              alt="{{ product.product_Name }}"
                              style="height:200px; object-fit:cover;">
 
-                        <div class="card">
-                            <div class="card-body">
-                                <h5 class="card-title">{{ product.product_Name }}</h5>
-                                <p class="card-text text-warning">Price: ${{ "%.2f"|format(product.product_Price) }}</p>
-                                <p class="card-text">Description: {{ product.product_Description }}</p>
-                                {% if product.product_Stock > 0 %}
-                                    <p class="card-text text-success">Availability: In stock</p>
-                                    <a href="{{ url_for('add_to_cart', product_id=product.product_ID) }}" class="btn btn-primary">Add to Cart</a>
-                                {% else %}
-                                    <p class="card-text text-danger">Availability: Out of stock</p>
-                                    <button class="btn btn-secondary" disabled>Add to Cart</button>
-                                {% endif %}
-                            </div>
+                        <div class="card-body">
+                            <h5 class="card-title">{{ product.product_Name }}</h5>
+                            <p class="card-text text-muted">{{ product.product_Brand }}</p>
+                            <p class="card-text fw-bold">${{ "%.2f"|format(product.product_Price) }}</p>
+                            <p class="card-text small text-muted">{{ product.product_Description[:100] }}{% if product.product_Description|length > 100 %}...{% endif %}</p>
+                            
+                            {% if product.product_Stock > 0 %}
+                                <p class="card-text small text-success">
+                                    <i class="bi bi-check-circle me-1"></i>In Stock
+                                </p>
+                                <a href="{{ url_for('add_to_cart', product_id=product.product_ID) }}" 
+                                   class="btn btn-primary w-100">
+                                    <i class="bi bi-cart-plus me-2"></i>Add to Cart
+                                </a>
+                            {% else %}
+                                <p class="card-text small text-danger">
+                                    <i class="bi bi-x-circle me-1"></i>Out of Stock
+                                </p>
+                                <button class="btn btn-secondary w-100" disabled>
+                                    <i class="bi bi-cart-x me-2"></i>Unavailable
+                                </button>
+                            {% endif %}
                         </div>
+
                     </div>
                 </div>
                 {% endfor %}
@@ -326,10 +375,55 @@
 
 {% block scripts %}
 <script>
+function updateMinSlider(value) {
+    const maxSlider = document.getElementById('maxSlider');
+    const maxValue = parseInt(maxSlider.value);
+    
+    // Prevent min from exceeding max
+    if (parseInt(value) > maxValue) {
+        value = maxValue;
+        document.getElementById('minSlider').value = value;
+    }
+    
+    // Update all displays
+    document.getElementById('minDisplay').textContent = value;
+    document.getElementById('minLabel').textContent = value;
+    document.getElementById('minPrice').value = value;
+}
+
+function updateMaxSlider(value) {
+    const minSlider = document.getElementById('minSlider');
+    const minValue = parseInt(minSlider.value);
+    
+    // Prevent max from going below min
+    if (parseInt(value) < minValue) {
+        value = minValue;
+        document.getElementById('maxSlider').value = value;
+    }
+    
+    // Update all displays
+    document.getElementById('maxDisplay').textContent = value;
+    document.getElementById('maxLabel').textContent = value;
+    document.getElementById('maxPrice').value = value;
+}
+
+function syncSliders() {
+    const minPrice = parseInt(document.getElementById('minPrice').value) || 0;
+    const maxPrice = parseInt(document.getElementById('maxPrice').value) || 2000;
+    
+    // Update sliders when number inputs change
+    document.getElementById('minSlider').value = minPrice;
+    document.getElementById('maxSlider').value = maxPrice;
+    
+    // Update displays
+    updateMinSlider(minPrice);
+    updateMaxSlider(maxPrice);
+}
+
 function updateFilters() {
     const brand = document.querySelector('input[name="brand"]:checked')?.value || '';
     const minPrice = document.getElementById('minPrice').value || 0;
-    const maxPrice = document.getElementById('maxPrice').value || '';
+    const maxPrice = document.getElementById('maxPrice').value || 2000;
     const searchTerm = document.getElementById('searchInput').value || '';
 
     let url = '{{ url_for("parts", category=category) }}';
@@ -338,7 +432,7 @@ function updateFilters() {
     if (searchTerm) params.append('search', searchTerm);
     if (brand) params.append('brand', brand);
     if (minPrice > 0) params.append('min_price', minPrice);
-    if (maxPrice) params.append('max_price', maxPrice);
+    if (maxPrice < 2000) params.append('max_price', maxPrice);
 
     window.location.href = params.toString() ? url + '?' + params.toString() : url;
 }
@@ -351,10 +445,6 @@ function removeFilter(type) {
 
 function clearAllFilters() {
     window.location.href = '{{ url_for("parts", category=category) }}';
-}
-
-function updatePriceDisplay(value) {
-    document.getElementById('maxPrice').value = value;
 }
 
 function sortProducts(value) {

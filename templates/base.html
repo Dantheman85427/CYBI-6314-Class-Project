@@ -647,8 +647,8 @@
     </div>
 
     <!-- Header -->
-    <header data-bs-theme="dark">
-        <nav class="navbar navbar-expand-md navbar-dark bg-dark-custom">
+    <header>
+        <nav class="navbar navbar-expand-md">
             <div class="container-fluid">
                 <a class="navbar-brand" href="{{ url_for('homepage') }}">
                     <i class="bi bi-cpu-fill me-2"></i>PC Hardware Pro
@@ -672,14 +672,23 @@
                                 <li><a class="dropdown-item" href="{{ url_for('parts', category='memory') }}">RAM</a></li>
                                 <li><a class="dropdown-item" href="{{ url_for('parts', category='gpus') }}">GPUs</a></li>
                                 <li><a class="dropdown-item" href="{{ url_for('parts', category='storage') }}">Storage</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('parts', category='power-supplies') }}">Power Supplies</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('parts', category='cooling') }}">Cooling</a></li>
                             </ul>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('prebuilt_pcs') }}">Gaming PCs</a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('parts', category='cases') }}">Cases</a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('parts', category='accessories') }}">Accessories</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('parts', category='Parts') }}">All Parts</a>
+                        </li>
+                        
                     </ul>
                     <!-- Search Form -->
                     <form class="d-flex" role="search" method="GET" action="{{ url_for('parts') }}">
@@ -693,12 +702,18 @@
                             <i class="bi bi-search"></i>
                         </button>
                     </form>
+                    <div class = "d-flex align-items-center gap-3">
                     <a class="nav-link" href="{{ url_for('cart') }}">
                         <i class="bi bi-cart3"></i> Cart
                     </a>
+                    <a class="nav-link" href="{{ url_for('orders') }}">
+                        <i class="bi bi-bag-check"></i> Orders
+                    </a>
+                    </div>
                     <div class="navbar-nav ms-3">
                         <a href="{{ url_for('account') }}">
-                            <button type="button" class="btn btn-primary">Account</button>
+                            <button type="button" class="btn btn-primary"> {{session['username']}}</button>
+                           
                         </a>
                         <a href="{{ url_for('log_out') }}">
                             <button type="button" class="btn btn-primary">Logout</button>
@@ -838,8 +853,5 @@
         })()
     </script>
     {% block scripts %}{% endblock %}
-</body>
-</html>
-
 </body>
 </html>
