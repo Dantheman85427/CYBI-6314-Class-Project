@@ -503,7 +503,8 @@ def parts(category=None):
             search_filter = db.or_(
                 Products.product_Name.ilike(f'%{sanitized_search}%'),
                 Products.product_Brand.ilike(f'%{sanitized_search}%'),
-                Products.product_Description.ilike(f'%{sanitized_search}%')
+                Products.product_Description.ilike(f'%{sanitized_search}%'),
+                Products.product_Type.ilike(f'%{sanitized_search}%'),
             )
             query = query.filter(search_filter)
 

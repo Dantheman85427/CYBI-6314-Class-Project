@@ -292,14 +292,17 @@
                         <div class="card">
                             <div class="card-body">
                                 <h5 class="card-title">{{ product.product_Name }}</h5>
-                                <p class="card-text">{{ product.product_Brand }}</p>
-                                <p class="card-text">${{ "%.2f"|format(product.product_Price) }}</p>
-                                <p class="card-text">{{ product.product_Description }}</p>
-                                <a href="{{ url_for('add_to_cart', product_id=product.product_ID) }}" 
-                                class="btn btn-primary">Add to Cart</a>
+                                <p class="card-text text-warning">Price: ${{ "%.2f"|format(product.product_Price) }}</p>
+                                <p class="card-text">Description: {{ product.product_Description }}</p>
+                                {% if product.product_Stock > 0 %}
+                                    <p class="card-text text-success">Availability: In stock</p>
+                                    <a href="{{ url_for('add_to_cart', product_id=product.product_ID) }}" class="btn btn-primary">Add to Cart</a>
+                                {% else %}
+                                    <p class="card-text text-danger">Availability: Out of stock</p>
+                                    <button class="btn btn-secondary" disabled>Add to Cart</button>
+                                {% endif %}
                             </div>
                         </div>
-
                     </div>
                 </div>
                 {% endfor %}
