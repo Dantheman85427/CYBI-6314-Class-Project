@@ -332,7 +332,7 @@
                             <h5 class="card-title">{{ product.product_Name }}</h5>
                             <p class="card-text text-muted">{{ product.product_Brand }}</p>
                             <p class="card-text fw-bold">${{ "%.2f"|format(product.product_Price) }}</p>
-                            <p class="card-text small text-muted">{{ product.product_Description[:100] }}{% if product.product_Description|length > 100 %}...{% endif %}</p>
+                            <p class="card-text small text-muted">{{ product.product_Description}}</p>
                             
                             {% if product.product_Stock > 0 %}
                                 <p class="card-text small text-success">

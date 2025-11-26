@@ -9,23 +9,34 @@
         <p>No orders yet.</p>
     {% else %}
         {% for order in orders %}
-            <div class="card mb-3">
-                <div class="card-header">
-                    Order #{{ order.order_id }} — {{ order.created_at.strftime('%Y-%m-%d %H:%M') }}
-                </div>
-                <ul class="list-group list-group-flush">
-                    {% for item in order.items %}
-                        <li class="list-group-item d-flex justify-content-between">
-                            {{ item.product.product_Name }} (x{{ item.quantity }})
-                            <span>${{ "%.2f"|format(item.price_each * item.quantity) }}</span>
-                        </li>
-                    {% endfor %}
-                </ul>
-                <div class="card-footer text-end">
-                    <strong>Total: ${{ "%.2f"|format(order.total_price) }}</strong>
-                </div>
+        <div class="card mb-3">
+            <div class="card-header">
+                Order #{{ order.order_id }} — {{ order.created_at.strftime('%Y-%m-%d %H:%M') }}
             </div>
-        {% endfor %}
+            {% for item in order.items %}
+                <div class="row g-0">
+                    <div class="col-md-2"> <!-- -->
+                        <img src="{{ url_for('static', filename=(item.product.product_Image.lstrip('/').replace('\\', '/').replace('static/', '')))}}" class="img-fluid rounded-start" alt="{{ item.product.product_Name }}">
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ item.product.product_Name }} (Quantity: {{ item.quantity }})</h5>
+                            <p class="card-text">{{ item.product.product_Description }}</p>
+                            <p class="card-text">
+                                <strong>${{ "%.2f"|format(item.price_each * item.quantity) }}</strong>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% if not loop.last %}
+                    <hr class="m-0">
+                {% endif %}
+            {% endfor %}
+            <div class="card-footer text-end">
+                <strong>Total: ${{ "%.2f"|format(order.total_price) }}</strong>
+            </div>
+        </div>
+    {% endfor %}
     {% endif %}
     <!-- Flash messages -->
     {% for message in get_flashed_messages() %}
