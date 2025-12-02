@@ -37,6 +37,10 @@
         background-color: var(--bs-primary) !important;
         color: #ffffff !important;
     }
+    /* Remove underline for anchor links */
+    a {
+        text-decoration: none;
+    }
 </style>
 {% endblock %}
 
@@ -288,10 +292,7 @@
                 </div>
             </div>
         </div>
-
-        <!-- ========================= -->
         <!--       PRODUCT GRID        -->
-        <!-- ========================= -->
         <div class="col-lg-9">
 
             <!-- Sort bar -->
@@ -316,6 +317,7 @@
             <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
                 {% for product in products %}
                 <div class="col">
+                     <a href="{{ url_for('product', product_id=product.product_ID)}}">
                     <div class="card shadow-sm border-0 h-100 product-card">
 
                         <img src="{{ url_for('static', filename=product.product_Image.replace('static/', '')) if product.product_Image else url_for('static', filename='images/default.png') }}"
@@ -327,14 +329,15 @@
                             <h5 class="card-title">{{ product.product_Name }}</h5>
                             <p class="card-text text-muted">{{ product.product_Brand }}</p>
                             <p class="card-text fw-bold">${{ "%.2f"|format(product.product_Price) }}</p>
-                            <p class="card-text small text-muted">{{ product.product_Description }}</p>
+                            <p class="card-text small text-muted">{{ product.product_Description[:100] }}{% if product.product_Description|length > 100 %}...{% endif %}</p>
+
                             
                             {% if product.product_Stock > 0 %}
                                 <p class="card-text small text-success">
                                     <i class="bi bi-check-circle me-1"></i>In Stock
                                 </p>
                                 <a href="{{ url_for('add_to_cart', product_id=product.product_ID) }}" 
-                                   class="btn btn-primary w-100">
+                                   class="btn btn-primary w-100 mt-3">
                                     <i class="bi bi-cart-plus me-2"></i>Add to Cart
                                 </a>
                             {% else %}
@@ -349,6 +352,7 @@
 
                     </div>
                 </div>
+            </a>
                 {% endfor %}
             </div>
 

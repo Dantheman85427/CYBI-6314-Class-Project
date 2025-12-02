@@ -1162,6 +1162,16 @@ def privacy_policy():
     flash("Hello Welcome to the Privacy_Policy! This feature is coming soon!")
     return render_template('privacy_policy.html')
 
+#======================= Product =======================#
+@app.route('/Homepage/product/<int:product_id>')
+@logged_in_required()
+def product(product_id):
+    product = db.session.get(Products, product_id)
+
+    if product is None:
+        return "Product not found", 404
+    return render_template('product.html', product=product)
+
 #======================= Logout =======================#
 @app.route('/logout')
 @logged_in_required()
