@@ -330,6 +330,13 @@ def log_in():
                     if ph.verify(user.pass_hash, form.password.data):
                         session['username'] = user.user_Name
                         session['user_id'] = user.user_ID
+                        cart = Cart.query.filter_by(user_id=user.user_ID).first()
+                        if not cart or len(cart.items) == 0:
+                            print("DEBUG: Cart is empty")  # Debug line
+                            session['cart_length'] = 0
+                        else: 
+                            print("DEBUG: Cart has " + str(len(cart.items)))
+                            session['cart_length'] = len(cart.items)
                         flash("Welcome, " + session.get('username') + "!")
                         return redirect(url_for('homepage'))
                 except:
@@ -395,6 +402,7 @@ def create_account():
                     
                     session['username'] = user.user_Name  
                     session['user_id'] = user.user_ID
+                    session['cart_length'] = 0
 
                     flash("Account created successfully! Welcome, " + session.get('username') + "!")
                     return redirect(url_for('homepage'))
@@ -574,6 +582,7 @@ def add_to_cart(product_id):
         db.session.add(item)
 
     db.session.commit()
+    session['cart_length'] = len(cart.items)
     flash("Item added to cart!")
     return redirect(request.referrer)
 
@@ -616,6 +625,10 @@ def increase_quantity(item_id):
         flash('Unauthorized action')
         return redirect(url_for('cart'))
     cart_item.quantity += 1
+
+    cart = Cart.query.filter_by(user_id=user_id).first()
+    session['cart_length'] = len(cart.items)
+
     db.session.commit()
     flash('Quantity increased!')
     return redirect(url_for('cart'))
@@ -648,7 +661,10 @@ def decrease_quantity(item_id):
         db.session.delete(cart_item)
         db.session.commit()
         flash('Item removed from cart')
-    
+
+    cart = Cart.query.filter_by(user_id=user_id).first()
+    session['cart_length'] = len(cart.items)
+
     return redirect(url_for('cart'))
 
 # ==== Remove ==== #
@@ -671,6 +687,10 @@ def remove_item(item_id):
     product_name = cart_item.product.product_Name
     db.session.delete(cart_item)
     db.session.commit()
+
+    cart = Cart.query.filter_by(user_id=user_id).first()
+    session['cart_length'] = len(cart.items)
+
     flash(f'{product_name} removed from cart')
     
     return redirect(url_for('cart'))
@@ -687,6 +707,7 @@ def empty_cart():
         # Delete all cart items
         CartItem.query.filter_by(cart_id=cart.cart_id).delete()
         db.session.commit()
+        session['cart_length'] = 0
         flash('Cart emptied')
     
     return redirect(url_for('cart'))
@@ -801,6 +822,9 @@ def payment_success():
         # Clear cart
         CartItem.query.filter_by(cart_id=cart.cart_id).delete()
         db.session.commit()
+
+        cart = Cart.query.filter_by(user_id=user_id).first()
+        session['cart_length'] = len(cart.items)
 
         flash("Payment successful! Your order has been placed.")
         return redirect(url_for('orders'))
@@ -1007,7 +1031,7 @@ def admin():
             user_id = request.form.get('delete_user')
             user = UserCredentials.query.filter_by(user_ID=user_id).first()
             if user:
-                if user.user_Role == 'root_admin':
+                if user.user_Name == 'admin':
                     flash("Cannot delete root admin account.", "danger")
                 else:
                     db.session.delete(user)
@@ -1145,6 +1169,7 @@ def log_out():
     session.pop('username')
     session.pop('user_id')
     session.pop('cart', None)
+    session.pop('cart_length', None)
     session.modified = True
     flash("You have been logged out.")
     return redirect(url_for('log_in'))

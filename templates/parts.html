@@ -89,7 +89,7 @@
             <i class="bi bi-arrow-left me-2"></i>View All Products
         </a>
         {% else %}
-        <span class="badge badge-theme">
+        <span class="badge badge-theme" id="header_count">
             {{ products|length }} products found
         </span>
         {% endif %}
@@ -155,24 +155,19 @@
                             </span>
                         </div>
                     {% endif %}
-
                     <!-- Search Filter -->
                     <div class="mb-4">
                         <h6 class="text-muted mb-3">Search</h6>
                         <div class="input-group input-group-sm">
                             <input type="text"
-                                   class="form-control"
-                                   placeholder="Search products..."
-                                   id="searchInput"
-                                   value="{{ search_term }}"
-                                   onkeypress="if(event.keyCode==13) updateFilters()">
-                            <button class="btn btn-outline-secondary" type="button" onclick="updateFilters()">
-                                <i class="bi bi-search"></i>
-                            </button> 
+                                class="form-control"
+                                placeholder="Search products..."
+                                id="searchInput"
+                                value="{{ search_term }}"
+                                onkeypress="if(event.keyCode==13) search_within_page()">
                         </div>
                     </div>
                     <hr>
-
                     <!-- Brand Filter -->
                     {% if brands %}
                     <h6 class="text-muted mb-3">Brand</h6>
@@ -311,7 +306,7 @@
                     </select>
                 </div>
 
-                <span class="text-muted">
+                <span class="text-muted" id="product_count">
                     Showing {{ products|length }} products
                 </span>
             </div>
@@ -332,7 +327,7 @@
                             <h5 class="card-title">{{ product.product_Name }}</h5>
                             <p class="card-text text-muted">{{ product.product_Brand }}</p>
                             <p class="card-text fw-bold">${{ "%.2f"|format(product.product_Price) }}</p>
-                            <p class="card-text small text-muted">{{ product.product_Description}}</p>
+                            <p class="card-text small text-muted">{{ product.product_Description }}</p>
                             
                             {% if product.product_Stock > 0 %}
                                 <p class="card-text small text-success">
@@ -450,5 +445,103 @@ function clearAllFilters() {
 function sortProducts(value) {
     alert("Sorting would occur server-side: " + value);
 }
+
+let searchTimeout = null;
+
+function search_within_page() {
+    const query = document.getElementById('searchInput').value.toLowerCase().trim();
+    const productCards = document.querySelectorAll('.product-card');
+    let visibleCount = 0;
+
+    productCards.forEach(card => {
+        const productName = card.querySelector('.card-title').textContent.toLowerCase();
+        const productBrand = card.querySelector('.text-muted').textContent.toLowerCase();
+        const productDescription = card.querySelector('.small.text-muted').textContent.toLowerCase();
+        
+        // Check if any field contains the search query
+        const matches = productName.includes(query) || 
+                       productBrand.includes(query) || 
+                       productDescription.includes(query);
+        
+        if (matches || query === '') {
+            card.style.display = '';
+            visibleCount++;
+            
+            // Highlight matching text
+            if (query) {
+                highlightText(card, query);
+            } else {
+                removeHighlights(card);
+            }
+        } else {
+            card.style.display = 'none';
+            removeHighlights(card);
+        }
+    });
+
+    // Update product count display
+    const countElement1 = document.getElementById('header_count');
+    if (countElement1) {
+        countElement1.textContent = `${visibleCount} products found`;
+    }
+    const countElement2 = document.getElementById('product_count');
+    if (countElement2) {
+        countElement2.textContent = `Showing ${visibleCount} products`;
+    }
+}
+
+function highlightText(card, query) {
+    // Remove existing highlights first
+    removeHighlights(card);
+    
+    // Highlight in product name
+    const titleElement = card.querySelector('.card-title');
+    titleElement.innerHTML = highlightTextInElement(titleElement.textContent, query);
+    
+    // Highlight in brand
+    const brandElement = card.querySelector('.text-muted');
+    brandElement.innerHTML = highlightTextInElement(brandElement.textContent, query);
+    
+    // Highlight in description
+    const descElement = card.querySelector('.small.text-muted');
+    descElement.innerHTML = highlightTextInElement(descElement.textContent, query);
+}
+
+function highlightTextInElement(text, query) {
+    if (!query) return text;
+    
+    const regex = new RegExp(`(${escapeRegex(query)})`, 'gi');
+    return text.replace(regex, '<mark class="bg-warning">$1</mark>');
+}
+
+function removeHighlights(card) {
+    const elements = card.querySelectorAll('.card-title, .text-muted, .small.text-muted');
+    elements.forEach(element => {
+        element.innerHTML = element.innerHTML.replace(/<mark class="bg-warning">(.*?)<\/mark>/gi, '$1');
+    });
+}
+
+function escapeRegex(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// Initialize search functionality when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    
+    // Add event listener for real-time search
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            search_within_page();
+        }, 300); // 300ms delay
+    });
+    
+    // Apply any existing search term on page load
+    if (searchInput.value) {
+        search_within_page();
+    }
+});
+
 </script>
 {% endblock %}

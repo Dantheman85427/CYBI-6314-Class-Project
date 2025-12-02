@@ -679,7 +679,7 @@
                             </ul>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('parts', category='Parts') }}">All Parts</a>
+                            <a class="nav-link" href="{{ url_for('parts') }}">All Parts</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('prebuilt_pcs') }}">Gaming PCs</a>
@@ -700,7 +700,11 @@
                     </form>
                     <div class = "d-flex align-items-center gap-3">
                     <a class="nav-link" href="{{ url_for('cart') }}">
-                        <i class="bi bi-cart3"></i> Cart
+                        {% if session['cart_length'] %}
+                            <i class="bi bi-cart3"></i> Cart ( {{session['cart_length']}} )
+                        {% else %}
+                            <i class="bi bi-cart3"></i> Cart
+                        {% endif %}
                     </a>
                     <a class="nav-link" href="{{ url_for('orders') }}">
                         <i class="bi bi-bag-check"></i> Orders
