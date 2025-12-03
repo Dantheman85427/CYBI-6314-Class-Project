@@ -333,26 +333,32 @@
 
                             
                             {% if product.product_Stock > 0 %}
-                                <p class="card-text small text-success">
-                                    <i class="bi bi-check-circle me-1"></i>In Stock
-                                </p>
-                                <a href="{{ url_for('add_to_cart', product_id=product.product_ID) }}" 
-                                   class="btn btn-primary w-100 mt-3">
-                                    <i class="bi bi-cart-plus me-2"></i>Add to Cart
-                                </a>
+                                <div class="d-flex align-items-center justify-content-between mt-3">
+                                    <p class="card-text small text-success m-0">
+                                        <i class="bi bi-check-circle me-1"></i>In Stock
+                                    </p>
+
+                                    <a href="{{ url_for('add_to_cart', product_id=product.product_ID) }}" 
+                                    class="btn btn-primary btn-sm">
+                                        <i class="bi bi-cart-plus me-2"></i>Add
+                                    </a>
+                                </div>
                             {% else %}
-                                <p class="card-text small text-danger">
-                                    <i class="bi bi-x-circle me-1"></i>Out of Stock
-                                </p>
-                                <button class="btn btn-secondary w-100 mt-3" disabled>
-                                    <i class="bi bi-cart-x me-2"></i>Unavailable
-                                </button>
+                                <div class="d-flex align-items-center justify-content-between mt-3">
+                                    <p class="card-text small text-danger m-0">
+                                        <i class="bi bi-x-circle me-1"></i>Out of Stock
+                                    </p>
+
+                                    <button class="btn btn-secondary btn-sm" disabled>
+                                        <i class="bi bi-cart-x me-2"></i>Unavailable
+                                    </button>
+                                </div>
                             {% endif %}
+
                         </div>
                         </a>
+                    </div>
 
-                    </div>
-                    </div>
                 </div>
 
                 {% endfor %}
