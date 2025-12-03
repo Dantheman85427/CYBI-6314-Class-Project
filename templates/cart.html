@@ -34,7 +34,7 @@
                             alt="{{ item.product.product_Name }}"
                             style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; margin-right: 15px;">
                         <div>
-                            <a href="{{ url_for('product', product_id=product.product_id)}}">
+                            <a href="{{ url_for('product', product_id=item.product.product_ID)}}">
                             <strong>{{ item.product.product_Name }}</strong><br> </a>
                             <small class="text-muted">${{ "%.2f"|format(item.product.product_Price) }} each</small>
                         </div>
