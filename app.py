@@ -1124,42 +1124,36 @@ def compatibility_checker():
 @app.route('/Homepage/Warranty')
 @logged_in_required()
 def warranty():
-    flash("Hello Welcome to the Warranty! This feature is coming soon!")
     return render_template('warranty.html')
 
 #======================= Contact_Us =======================#
 @app.route('/Homepage/Contact_Us')
 @logged_in_required()
 def contact_us():
-    flash("Hello Welcome to the Contact_Us! This feature is coming soon!")
     return render_template('contact_us.html')
 
 #======================= About_Us =======================#
-@app.route('/Homepage/About_Us')
+@app.route('/Homepage/about_us')
 @logged_in_required()
 def about_us():
-    flash("Hello Welcome to the About_Us! This feature is coming soon!")
     return render_template('about_us.html')
 
 #======================= Careers =======================#
 @app.route('/Homepage/Careers')
 @logged_in_required()
 def careers():
-    flash("Hello Welcome to the Careers! This feature is coming soon!")
     return render_template('careers.html')
 
 #======================= Locations =======================#
 @app.route('/Homepage/Locations')
 @logged_in_required()
 def locations():
-    flash("Hello Welcome to the Locations! This feature is coming soon!")
     return render_template('locations.html')
 
 #======================= Privacy_Policy =======================#
 @app.route('/Homepage/Privacy_Policy')
 @logged_in_required()
 def privacy_policy():
-    flash("Hello Welcome to the Privacy_Policy! This feature is coming soon!")
     return render_template('privacy_policy.html')
 
 #======================= Product =======================#

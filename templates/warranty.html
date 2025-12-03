@@ -1,16 +1,58 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
-{% block title %}Warranty - PC Parts Store{% endblock %}
-
-{% block head %}
-{% endblock %}
+{% block title %}Warranty{% endblock %}
 
 {% block body %}
-    <!-- Flash messages -->
     {% for message in get_flashed_messages() %}
-    <div class="alert alert-warning mt-3" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" onclick="removeFlash()"></button>
-    </div>
+<div class="alert alert-warning mt-3" role="alert">
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" onclick="removeFlash()"></button>
+</div>
     {% endfor %}
+<!-- Warranty -->
+<div class="container py-4">
+    <section class="mb-5">
+        <h1 class="mb-4">Warranty Policy</h1>
+        <!-- Coverage -->
+        <h2>Coverage:</h2>
+        <ul>
+            <li>Covers any defects in materials used to manufacture your product</li>
+            <li>Covers any broken components under normal use if failure is <b>below 5 years after purchase</b></li>
+        </ul>
+    </section>
+
+    <section class="mb-5">
+        <!-- Remediation -->
+        <h2>Remediation:</h2>
+        <ul>
+            <li>PC Hardware Pro will repair product, at no cost, if the the product is under warranty</li>
+            <li>PC Hardware Pro will repair any broken parts of a product using new or replacement parts</li>
+            <li>PC Hardware Pro will exchange the defective and/or broken product with a new product</li>
+            <li>PC Hardware Pro will refund defective product if customer desires refund instead of fix or replacement</li>
+        </ul>
+    </section>
+    <!-- None Coverage -->
+    <section class="mb-5">
+        <h2>PC Hardware Pro Warranty does not cover:</h2>
+        <ul>
+            <li>Damage caused by negligence, improper handling, or misuse of the product.</li>
+            <li>Damage resulting from unauthorized modifications, repairs, BIOS flashing, overclocking, or firmware changes performed by non-authorized technicians.</li>
+            <li>Damage caused by improper installation, including incorrect mounting, inadequate cooling, incompatible components, or misuse of power connectors.</li>
+            <li>Damage due to electrical issues, including power surges, lightning strikes, or improper power supply usage.</li>
+            <li>Damage caused by natural disasters such as flooding, fire, earthquakes, hurricanes, or other acts of nature.</li>
+            <li>Issues arising from third-party software, drivers, or operating system modifications.</li>
+            <li>Products that have been altered, defaced, or tampered with, including removed or damaged serial number labels.</li>
+            <li>Normal wear-and-tear or expected degradation over time after <b>5 years after time of purchase</b></li>
+            <li>Theft, loss, or misplacement of the product.</li>
+            <li>Damage caused by using the product outside recommended environmental conditions, such as excessive dust, humidity, heat, or poor ventilation. <strong>(list is not exhaustive)</strong></li>
+        </ul>
+    </section>
+    <section class="mb-5">
+        <h2>Consumer Protection</h2>
+        <i>
+            Some states do not allow the exclusion or limitation of incidental or consequential damages or allow limitations on how long an implied warranty lasts, so the above limitations or exclusions may not apply to you. This warranty gives you specific legal rights, and you may also have other rights that vary by state to state.
+        </i>
+    </section>
+
+</div>
 {% endblock %}

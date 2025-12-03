@@ -6,11 +6,59 @@
 {% endblock %}
 
 {% block body %}
-    <!-- Flash messages -->
-    {% for message in get_flashed_messages() %}
-    <div class="alert alert-warning mt-3" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" onclick="removeFlash()"></button>
-    </div>
-    {% endfor %}
+{% for message in get_flashed_messages() %}
+<div class="alert alert-warning mt-3" role="alert">
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" onclick="removeFlash()"></button>
+</div>
+{% endfor %}
+    <!-- Privacy Policy -->
+    <h1 class="mb-4">Privacy policy</h1>
+        <ol>
+    <li>
+        <strong>Introduction</strong>
+        <p>We are responsible for maintaining and protecting the Personal Information under our control in accordance with U.S. privacy laws. We have designated an individual or individuals who is/are responsible for compliance with our privacy policy.</p>
+    </li>
+    <li>
+        <strong>Identifying Purposes</strong>
+        <p>We collect, use and disclose Personal Information to provide you with the product or service you have requested and to offer you additional products and services we believe you might be interested in. The purposes for which we collect Personal Information will be identified before or at the time we collect the information. In certain circumstances, the purposes for which information is collected may be clear, and consent may be implied, such as where your name, address and payment information is provided as part of the order process.</p>
+    </li>
+    <li>
+        <strong>Consent</strong>
+        <p>Knowledge and consent are required for the collection, use or disclosure of Personal Information except where required or permitted by U.S. law. Providing us with your Personal Information is always your choice. However, your decision not to provide certain information may limit our ability to provide you with our products or services. We will not require you to consent to the collection, use, or disclosure of information as a condition to the supply of a product or service, except as required to be able to supply the product or service.</p>
+    </li>
+    <li>
+        <strong>Limiting Collection</strong>
+        <p>The Personal Information collected will be limited to those details necessary for the purposes identified by us. With your consent, we may collect Personal Information from you in person, over the telephone or by corresponding with you via mail, facsimile, or the Internet.</p>
+    </li>
+    <li>
+        <strong>Limiting Use, Disclosure and Retention</strong>
+        <p>Personal Information may only be used or disclosed for the purpose for which it was collected unless you have otherwise consented, or when it is required or permitted by U.S. law. Personal Information will only be retained for the period of time required to fulfill the purpose for which we collected it or as may be required by U.S. law. [If applicable, include a description of any parties with whom you may share Personal Information.]</p>
+    </li>
+    <li>
+        <strong>Accuracy</strong>
+        <p>Personal Information will be maintained in as accurate, complete and up-to-date form as is necessary to fulfill the purposes for which it is to be used.</p>
+    </li>
+    <li>
+        <strong>Safeguarding Customer Information</strong>
+        <p>Personal Information will be protected by security safeguards that are appropriate to the sensitivity level of the information. We take all reasonable precautions to protect your Personal Information from any loss or unauthorized use, access or disclosure.</p>
+    </li>
+    <li>
+        <strong>Openness</strong>
+        <p>We will make information available to you about our policies and practices with respect to the management of your Personal Information.</p>
+    </li>
+    <li>
+        <strong>Customer Access</strong>
+        <p>Upon request, you will be informed of the existence, use and disclosure of your Personal Information, and will be given access to it. You may verify the accuracy and completeness of your Personal Information, and may request that it be amended, if appropriate. However, in certain circumstances permitted by U.S. law, we will not disclose certain information to you. For example, we may not disclose information relating to you if other individuals are referenced or if there are legal, security or commercial proprietary restrictions.</p>
+    </li>
+    <li>
+        <strong>Handling Customer Complaints and Suggestions</strong>
+        <p>You may direct any questions or enquiries with respect to our privacy policy or our practices by contacting:</p>
+        <p>[Contact Information]</p>
+    </li>
+    <li>
+        <strong>Other Websites</strong>
+        <p>Our website may contain links to other third party sites that are not governed by this privacy policy. Although we endeavour to only link to sites with high privacy standards, our privacy policy will no longer apply once you leave our website. Additionally, we are not responsible for the privacy practices employed by third party websites. Therefore, we suggest that you examine the privacy statements of those sites to learn how your information may be collected, used, shared and disclosed.</p>
+    </li>
+    </ol>
 {% endblock %}

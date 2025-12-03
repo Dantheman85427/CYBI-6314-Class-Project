@@ -6,11 +6,19 @@
 {% endblock %}
 
 {% block body %}
-    <!-- Flash messages -->
-    {% for message in get_flashed_messages() %}
-    <div class="alert alert-warning mt-3" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" onclick="removeFlash()"></button>
-    </div>
-    {% endfor %}
+{% for message in get_flashed_messages() %}
+<div class="alert alert-warning mt-3" role="alert">
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" onclick="removeFlash()"></button>
+</div>
+{% endfor %}
+<div class="container py-4">
+    <section class="mb-5">
+        <h2>PC Hardware Pro</h2>
+        <p>201 W University Dr, Edinburg, TX 78539</p>
+        <p>
+            Based out of CYBI-6314 class
+        </p>
+    </section>
+</div>
 {% endblock %}

@@ -1,16 +1,66 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
-{% block title %}About Us - PC Parts Store{% endblock %}
-
-{% block head %}
-{% endblock %}
+{% block title %}About Us{% endblock %}
 
 {% block body %}
     <!-- Flash messages -->
-    {% for message in get_flashed_messages() %}
-    <div class="alert alert-warning mt-3" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" onclick="removeFlash()"></button>
+{% for message in get_flashed_messages() %}
+<div class="alert alert-warning mt-3" role="alert">
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" onclick="removeFlash()"></button>
+</div>
+{% endfor %}
+<div class="container py-5">
+    <h1 class="text-center mb-5">About Us</h1>
+
+    <div class="row justify-content-center">
+
+        <!-- Jesus -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h3 class="card-title">Jesus Dela Rosa Jr.</h3>
+                    <p class="text-muted">B.S. Cybersecurity — UTRGV (Summa Cum Laude)</p>
+
+                    <h5 class="mt-4">Experience</h5>
+                    <ul>
+                        <li>Blackboard Help Desk Agent (UTRGV)</li>
+                        <li>RSOC Information Security Analyst</li>
+                    </ul>
+
+                    <h5 class="mt-4">Certifications</h5>
+                    <ul>
+                        <li>CompTIA Network+</li>
+                        <li>CompTIA Security+</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Daniel -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h3 class="card-title">Daniel Quiroz Jr.</h3>
+                    <p class="text-muted">B.S. Cybersecurity — UTRGV (Summa Cum Laude)</p>
+
+                    <h5 class="mt-4">Experience</h5>
+                    <ul>
+                        <li>Blackboard Help Desk Agent (UTRGV)</li>
+                        <li>AmeriCorps Member (UTRGV)</li>
+                        <li>OT Security Intern (LSPower Grid)</li>
+                        <li>Network Assistant (UTRGV)</li>
+                    </ul>
+
+                    <h5 class="mt-4">Certifications</h5>
+                    <ul>
+                        <li>CompTIA Network+</li>
+                        <li>CompTIA Security+</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
     </div>
-    {% endfor %}
+</div>
 {% endblock %}

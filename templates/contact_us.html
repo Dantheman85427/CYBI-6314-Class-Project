@@ -7,10 +7,52 @@
 
 {% block body %}
     <!-- Flash messages -->
-    {% for message in get_flashed_messages() %}
-    <div class="alert alert-warning mt-3" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" onclick="removeFlash()"></button>
+{% for message in get_flashed_messages() %}
+<div class="alert alert-warning mt-3" role="alert">
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" onclick="removeFlash()"></button>
+</div>
+{% endfor %}
+<div class="container py-5">
+    <h1 class="text-center mb-3">Contact Us</h1>
+    <p class="text-center text-muted mb-5">Get in touch with us through any of the following methods</p>
+
+    <div class="row justify-content-center g-4">
+        <!-- Email Section -->
+        <div class="col-md-5">
+            <div class="d-flex align-items-start gap-3">
+                <span class="fs-1">📧</span>
+                <div>
+                    <h4>Email Us</h4>
+                    <p class="mb-1 fw-semibold">For general inquiries:</p>
+                    <p><a href="mailto:pcpro@dqjdlr.com">pcpro@dqjdlr.com</a></p>
+
+                    <p class="mb-1 fw-semibold">For support:</p>
+                    <p><a href="mailto:pcpro_support@dqjdlr.com">pcpro_support@dqjdlr.com</a></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Phone Section -->
+        <div class="col-md-5">
+            <div class="d-flex align-items-start gap-3">
+                <span class="fs-1">📞</span>
+                <div>
+                    <h4>Call Us</h4>
+                    <p class="mb-1 fw-semibold">Main Office:</p>
+                    <p><a href="tel:+1234567890">+1 (234) 567-8900</a></p>
+                    <p class="text-muted">Hours: Mon–Fri, 9am–5pm EST</p>
+                </div>
+            </div>
+        </div>
     </div>
-    {% endfor %}
+
+    <!-- Response Time -->
+    <div class="mt-5 text-center">
+        <h3>Response Time</h3>
+        <p class="text-muted">We aim to respond to all inquiries within 24 hours during business days.</p>
+    </div>
+</div>
+
+
 {% endblock %}
