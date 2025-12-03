@@ -1,5 +1,5 @@
 from flask import Flask, render_template, flash, redirect, url_for, session, jsonify, request
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask_sqlalchemy import SQLAlchemy #pip install Flask-SQLAlchemy
 from pathlib import Path
 from argon2 import PasswordHasher       #pip install argon2-cffi
@@ -11,10 +11,20 @@ from wtforms.validators import data_required, ValidationError, Optional
 from functools import wraps
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
+from flask_limiter import Limiter # pip install flask-limiter
+from flask_limiter.util import get_remote_address
+import bleach
+import logging
 
 load_dotenv()
 
 app = Flask(__name__)
+
+required_env_vars = ['SECRET_KEY', 'ADMIN_PASSWORD', 'DATABASE_URL', 'SK_TEST', 'PK_TEST']
+for var in required_env_vars: 
+    if not os.environ.get(var):
+        raise RuntimeError(f"Required environment variable {var} is not set.")
+
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'fallback-insecure-key-change-in-production')
 # Read from file
 stripe_keys = {
@@ -22,11 +32,47 @@ stripe_keys = {
     "publishable_key": os.environ["PK_TEST"],
 }
 stripe.api_key = stripe_keys["secret_key"]
+# Configure logging
+log_dir = os.path.join("logs", datetime.now().strftime('%Y-%m-%d'))
+try:
+    os.makedirs(log_dir, exist_ok=True)  # Ensure the directory exists
+except Exception as e:
+    print(f"Error creating log directory: {e}")
+log_file = os.path.join(log_dir, datetime.now().strftime('app.log'))
+security_logger = logging.getLogger('security')
+security_handler = logging.FileHandler(log_file)
+security_logger.addHandler(security_handler)
+security_logger.setLevel(logging.INFO)
+
+# Log failed login attempts
+def log_security_event(event_type, user_ip, username=None, details=""):
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    log_message = f"{timestamp} - {event_type} - IP: {user_ip}"
+    if username:
+        log_message += f" - User: {username}"
+    if details:
+        log_message += f" - Details: {details}"
+    security_logger.info(log_message)
 
 #Configuring the Database location
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', f"sqlite:///{Path(__file__).parent / './Databases/userAccounts.db'}")
 app.config['UPLOAD_FOLDER'] = 'static/images/'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB limit
+app.config['MAX_LOGIN_ATTEMPTS'] = 5
+app.config['SESSION_LOCKOUT_DURATION'] = 300 # 5 minutes in seconds
+
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=["200 per day", "50 per hour"]
+)
+
+app.config.update(
+    SESSION_COOKIE_SECURE=False, # Only send cookies over HTTPS, False since in Localhost
+    SESSION_COOKIE_HTTPONLY=True, # Prevent Javascript access
+    SESSION_COOKIE_SAMESITE='Lax', # CSRF protection
+    PERMANENT_SESSION_LIFETIME=timedelta(hours=1) # Session timeout
+)
 
 #Initialize the database
 db = SQLAlchemy(app)
@@ -85,10 +131,12 @@ def admin_required():
         @wraps(f)
         def decorated_function(*args, **kwargs):
             if not session.get('username'):
+                log_security_event("ATTEMPT_ADMIN", request.remote_addr, f"Attempted to access admin page without login.")
                 flash("You must be logged in to access that page.")
                 return redirect(url_for('log_in'))
             user = UserCredentials.query.filter((UserCredentials.user_Name == session.get('username'))).first()
             if user and user.user_Role != 'root_admin':
+                log_security_event("ATTEMPT_ADMIN", request.remote_addr, session.get('username'), f"Attempted to access admin page without admin root_admin.")
                 flash("You must be an admin to acccess that page.")
                 return redirect(url_for('homepage'))
             flash("Welcome to the Admin page,  " + session.get('username') + "!")
@@ -132,6 +180,12 @@ def validatePassword(form, field):
         print('spec error')
         flash('Password must contain at least ' + str(passSpec) + ' special character')
         raise ValidationError('Password must contain at least ' + str(passSpec) + ' special character')
+
+# Sanitize search inputs
+def sanitize_input(input_string):
+    allowed_tags = []
+    allowed_attrs = {}
+    return bleach.clean(input_string, tags=allowed_tags, attributes=allowed_attrs, strip=True)
 
 # Creating a model for user credentials
 class  UserCredentials(db.Model):
@@ -223,6 +277,7 @@ class AdminProductForm (FlaskForm):
         ('PSU', 'Power Supply'),
         ('Case', 'Case'),
         ('Cooling', 'Cooling'),
+        ('GamingPC', 'Gaming PC'),
         ('Other', 'Other')
     ], validators=[data_required()])
     product_description = TextAreaField("Product Description", validators=[data_required()])
@@ -298,10 +353,25 @@ with app.app_context():
     pass
 
 #============================================== App routes
+
+@app.errorhandler(429)
+def ratelimit_handler(e):
+    # Initializes values to None 
+    username = None
+    user_role = None
+    password = None
+    passHash = None
+    # Specifies the form class to use
+    form = LoginForm()
+    log_security_event("IP_LOCKED", request.remote_addr, form.username.data, f"Session locked due to too many failed login attempts per IP.")
+    flash(f"You have exceeded the login attempts per minute for your IP address. Please try again later. {e}")
+    return render_template('log_in.html', form=form, username = username, passHash = passHash), 429
+
 #============================================================================================================== Default/Login
 #Handles the backend of the login page
 #======================= Login =======================#
 @app.route('/', methods=['POST', 'GET'])
+@limiter.limit("3 per minute") # 3 login attempts per minute per IP
 def log_in():
     if session.get('username'):
         flash("You are already logged in.")
@@ -317,19 +387,45 @@ def log_in():
 
         # Checks if the submit button has been pressed
         if form.validate_on_submit():
+            # Check if the user is locked out
+            if 'login_attempts' in session and session['login_attempts'] >= app.config['MAX_LOGIN_ATTEMPTS']:
+                if 'lockout_time' in session: 
+                    if datetime.now() < session['lockout_time'].replace(tzinfo=None):
+                        remaining = (session['lockout_time'].replace(tzinfo=None) - datetime.now()).seconds // 60
+                        log_security_event("SESSION_LOCKED", request.remote_addr, form.username.data, f"Session locked due to too many failed login attempts. Time remaining {remaining}")
+                        flash(f"Session locked. Reset your password or try again in {remaining} minutes.")
+                        return render_template('log_in.html', form = form, username = username, passHash = passHash)
+                    else: 
+                        session.pop('login_attempts', None)
+                        session.pop('lockout_time', None)
+                        log_security_event("SESSION_UNLOCKED", request.remote_addr, form.username.data, f"Session timer has ran out. User can attempt to login again or create a new account.")
+
+                else: 
+                    log_security_event("SESSION_LOCKED", request.remote_addr, form.username.data, "Session locked due to too many failed login attempts")
+                    session['lockout_time'] = datetime.now() + timedelta(seconds=app.config['SESSION_LOCKOUT_DURATION'])
+                    flash("Session locked due to too many failed login attempts. Reset your password or try again in 5 minutes.")
+                    return render_template('log_in.html', form = form, username = username, passHash = passHash)
             # Try to find user by username OR email
             user = UserCredentials.query.filter((UserCredentials.user_Name == form.username.data) | (UserCredentials.user_Email == form.username.data)).first()
             # if user exists
             if user:
                 # A new hash is generated with the password entered into the login form, using the same salt that is within the database
                 try: 
+                    # Update login attempts
+                    if 'login_attempts' in session:
+                        session['login_attempts'] = session.get('login_attempts', 0) + 1
+                    else:
+                        session['login_attempts'] = session.get('login_attempts', 0) + 1
                     if form.password.data.lower() == "'or 1 = 1":
+                        log_security_event("ATTEMPTED SQL INJECTION", request.remote_addr, form.username.data, f"Invalid username/email and attempted {form.password.data}")
                         flash("Nice Try.")
                         return render_template('log_in.html', form=form, username = username, passHash = passHash)
                     ph = PasswordHasher()
                     if ph.verify(user.pass_hash, form.password.data):
                         session['username'] = user.user_Name
                         session['user_id'] = user.user_ID
+                        if 'login_attempts' in session:
+                            session.pop('login_attempts')  # Reset login attempts on successful password reset
                         cart = Cart.query.filter_by(user_id=user.user_ID).first()
                         if not cart or len(cart.items) == 0:
                             print("DEBUG: Cart is empty")  # Debug line
@@ -340,23 +436,32 @@ def log_in():
                         flash("Welcome, " + session.get('username') + "!")
                         return redirect(url_for('homepage'))
                 except:
+                    log_security_event("FAILED_LOGIN", request.remote_addr, form.username.data, "Invalid password")
                     flash("Error: the information you entered does not match our records")
 
             else:
-                if form.password.data.lower() == "'or 1 = 1":
-                        flash("Nice try.")
+                # Update login attempts
+                if 'login_attempts' in session:
+                    session['login_attempts'] = session.get('login_attempts', 0) + 1
                 else:
-                    flash("Error: User does not exist the information you entered does not match our records.")
+                    session['login_attempts'] = session.get('login_attempts', 0) + 1
+                log_security_event("FAILED_LOGIN", request.remote_addr, form.username.data, "Invalid username/email")
+                if form.password.data.lower() == "'or 1 = 1":
+                        log_security_event("ATTEMPTED SQL INJECTION", request.remote_addr, form.username.data, f"Invalid username/email and attempted {form.password.data}")
+                        flash("Nice try.")
+
+                else:
+                    flash("Error: the information you entered does not match our records")
 
             # Clearing the form data after it has been submitted
             username = form.username.data
             form.username.data = ''
             password = form.password.data
             form.password.data = ''
+            flash(f"Login attempt {session['login_attempts']} of {app.config['MAX_LOGIN_ATTEMPTS']}.")
         # Re-rendering the login page after a failed login attempt
         return render_template('log_in.html', form=form, username = username, passHash = passHash)
 
-#======================= Create_Account =======================#
 #======================= Create_Account =======================#
 @app.route('/Create_Account',  methods=['POST', 'GET'])
 def create_account():
@@ -376,6 +481,18 @@ def create_account():
         form = RegisterForm()
 
         if form.validate_on_submit():
+            if 'lockout_time' in session: 
+                if datetime.now() < session['lockout_time'].replace(tzinfo=None):
+                    remaining = (session['lockout_time'].replace(tzinfo=None) - datetime.now()).seconds // 60
+                    log_security_event("SESSION_LOCKED", request.remote_addr, form.username.data, f"Session locked due to too many failed login attempts. User attempted to create account during lockout. Time remaining {remaining}")
+                    flash(f"Session locked due to too many login requests. You cannot create a new account or login until session is unlocked. You can reset your password or try again in {remaining} minutes.")
+                else: 
+                    session.pop('login_attempts', None)
+                    session.pop('lockout_time', None)
+                    log_security_event("SESSION_UNLOCKED", request.remote_addr, form.username.data, f"Session timer has ran out. User can now create a new account or login.")
+                    flash("Your session timer has ran out. You can now create a new account or login.")
+                return render_template('create_acct.html', form=form, username=username, dob=dob, address=address, city=city, state=state, zip=zip, email=email, passHash=passHash)
+
             existing_username = UserCredentials.query.filter_by(user_Name=form.username.data).first()
             existing_email = UserCredentials.query.filter_by(user_Email=form.email.data).first()
             if existing_username is None:
@@ -403,6 +520,8 @@ def create_account():
                     session['username'] = user.user_Name  
                     session['user_id'] = user.user_ID
                     session['cart_length'] = 0
+                    if 'login_attempts' in session:
+                        session.pop('login_attempts')  # Reset login attempts on successful password reset
 
                     flash("Account created successfully! Welcome, " + session.get('username') + "!")
                     return redirect(url_for('homepage'))
@@ -443,6 +562,9 @@ def forgotpw():
                     user.pass_hash = passHash
                     db.session.commit()
                     
+                    if 'login_attempts' in session:
+                        session.pop('login_attempts')  # Reset login attempts on successful password reset
+
                     flash("Password reset successfully! Please log in with your new password.")
                     return redirect(url_for('log_in'))
 
@@ -486,6 +608,7 @@ def parts(category=None):
         'power-supplies': 'PSU',
         'cases': 'Case',
         'cooling': 'Cooling',
+        'gamingpc': 'GamingPC',
         'accessories': 'Other'
     }
     
@@ -499,7 +622,7 @@ def parts(category=None):
         query = query.filter(Products.product_Type == product_type)
     
     # Get search term from request (sanitized)
-    search_term = request.args.get('search', '').strip()
+    search_term = sanitize_input(request.args.get('search', '').strip())
 
     # Apply search filter if provided
     if search_term:
@@ -926,6 +1049,7 @@ class ProductFilterForm(FlaskForm):
         ('PSU', 'Power Supply'),
         ('Case', 'Case'),
         ('Cooling', 'Cooling'),
+        ('GamingPC', 'Gaming PC'),
         ('Other', 'Other')
     ], validators=[Optional()])
     submit = SubmitField("Apply Filter")
@@ -963,6 +1087,7 @@ def admin():
     if user_form.validate_on_submit():
         user = UserCredentials.query.filter_by(user_ID=user_form.user_id.data).first()
         if user:
+            log_security_event("UPDATE_USER", request.remote_addr, session.get('username'), f"Updated to {user_form.new_role.data}.")
             if user.user_Role == user_form.new_role.data:
                 flash(f"User ID {user_form.user_id.data} already has the role {user_form.new_role.data}.")
             else:
@@ -970,6 +1095,7 @@ def admin():
                 db.session.commit()
                 flash(f"User ID {user_form.user_id.data} role updated to {user_form.new_role.data}.")
         else:
+            log_security_event("UPDATE_USER", request.remote_addr, session.get('username'), f"Attempted to updated to user ID not found.")
             flash("Error: User ID not found.")
 
     # Handle Product Operations
@@ -995,6 +1121,7 @@ def admin():
         )
         db.session.add(product)
         db.session.commit()
+        log_security_event("ADD_PRODUCT", request.remote_addr, session.get('username'), f"Added {product_form.product_name.data}.")
         flash(f"Product '{product_form.product_name.data}' added successfully.", "success")
         # Clear form after successful submission
         return redirect(url_for('admin', product_type=selected_type))
@@ -1019,6 +1146,7 @@ def admin():
             product.product_Price = product_form.product_price.data
             product.product_Image = filepath
             db.session.commit()
+            log_security_event("UPDATE_PRODUCT", request.remote_addr, session.get('username'), f"Updated {product_form.product_name.data}.")
             flash(f"Product '{product_form.product_name.data}' updated successfully.", "success")
             # Clear form after successful update
             return redirect(url_for('admin', product_type=selected_type))
@@ -1032,12 +1160,15 @@ def admin():
             user = UserCredentials.query.filter_by(user_ID=user_id).first()
             if user:
                 if user.user_Name == 'admin':
+                    log_security_event("DELETE_ADMIN", request.remote_addr, session.get('username'), f"Attempted to delete {user.user_Name}.")
                     flash("Cannot delete root admin account.", "danger")
                 else:
                     db.session.delete(user)
                     db.session.commit()
+                    log_security_event("DELETE_USER", request.remote_addr, session.get('username'), f"Deleted {user.user_Name}.")
                     flash(f"User '{user.user_Name}' deleted successfully.", "success")
             else:
+                log_security_event("DELETE_USER", request.remote_addr, session.get('username'), f"Attempted to deleted {user.user_Name}.")
                 flash("Error: User not found.", "danger")
         
         elif 'delete_product' in request.form:
@@ -1046,8 +1177,10 @@ def admin():
             if product:
                 db.session.delete(product)
                 db.session.commit()
+                log_security_event("DELETE_PRODUCT", request.remote_addr, session.get('username'), f"Deleted {product.product_Name}.")
                 flash(f"Product '{product.product_Name}' deleted successfully.", "success")
             else:
+                log_security_event("DELETE_PRODUCT", request.remote_addr, session.get('username'), f"Attempted to delete {product.product_Name}.")
                 flash("Error: Product not found.", "danger")
 
     # Handle Edit Product Request
@@ -1103,21 +1236,12 @@ def admin():
 @app.route('/Homepage/Build_Guide')
 @logged_in_required()
 def build_guide():
-    flash("Hello Welcome to the Build Guide! This feature is coming soon!")
     return render_template('build_guide.html')
-
-#======================= PreBuilt_PCs =======================#
-@app.route('/Homepage/PreBuilt_PCs')
-@logged_in_required()
-def prebuilt_pcs():
-    flash("Hello Welcome to the PreBuilt_PCs! This feature is coming soon!")
-    return render_template('prebuilt_pcs.html')
 
 #======================= Compatibility_Checker =======================#
 @app.route('/Homepage/Compatibility_Checker')
 @logged_in_required()
 def compatibility_checker():
-    flash("Hello Welcome to the Compatibility_Checker! This feature is coming soon!")
     return render_template('compatibility_checker.html')
 
 #======================= Warranty =======================#

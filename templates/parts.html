@@ -288,6 +288,11 @@
                            class="list-group-item list-group-item-action {% if category == 'accessories' %}active{% endif %}">
                            <i class="bi bi-keyboard me-2"></i>Accessories
                         </a>
+
+                        <a href="{{ url_for('parts', category='gamingpc') }}"
+                           class="list-group-item list-group-item-action {% if category == 'gamingpc' %}active{% endif %}">
+                           <i class="bi bi-pc me-2"></i>GamingPC
+                        </a>
                     </div>
                 </div>
             </div>

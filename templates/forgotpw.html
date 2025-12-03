@@ -131,7 +131,15 @@
             {% endfor %}
             
             <hr class="my-4">
-            
+            <div class="password-requirements">
+                <h5>Password Requirements:</h5>
+                <ul class="list-unstyled">
+                    <li>At least 9 characters</li>
+                    <li>1 uppercase letter</li>
+                    <li>1 number</li>
+                    <li>1 special character</li>
+                </ul>
+            </div>
             <div class="text-center">
                 <p class="mb-2">Remember your password?</p>
                 <a href="{{ url_for('log_in') }}" class="btn btn-outline-primary w-100 py-2">
