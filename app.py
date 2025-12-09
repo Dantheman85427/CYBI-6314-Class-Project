@@ -974,11 +974,11 @@ def account():
     delete_form = DeleteForm()
 
     current_user = UserCredentials.query.filter_by(user_Name = session.get('username')).first()
-    # Handle Edit Product Request
+    # Handle Edit Account Request
     if 'edit_account' in request.args:
         user_id = request.args.get('edit_account')
         user = UserCredentials.query.filter_by(user_ID = user_id).first()
-        if user and user.user_ID == current_user.user_ID: # User can only delete their own account
+        if user and user.user_ID == current_user.user_ID: # User can only edit their own account
             form = AccountForm(
                 userid = user.user_ID,
                 username = user.user_Name,
@@ -1030,6 +1030,9 @@ def account():
                 db.session.commit()
                 session.pop('username', None)
                 session.pop('user_id', None)
+                session.pop('cart', None)
+                session.pop('cart_length', None)
+                session.modified = True
                 flash(f"You have successfully deleted your account, '{user.user_Name}'.")
                 return redirect(url_for('log_in'))
         else:

@@ -682,9 +682,6 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('parts') }}">All Parts</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('prebuilt_pcs') }}">Gaming PCs</a>
-                        </li>
                         
                     </ul>
                     <!-- Search Form -->
@@ -750,7 +747,7 @@
                         <li><a class="link-secondary text-decoration-none" href="{{ url_for('parts', category='cpus') }}">CPUs</a></li>
                         <li><a class="link-secondary text-decoration-none" href="{{ url_for('parts', category='motherboards') }}">Motherboards</a></li>
                         <li><a class="link-secondary text-decoration-none" href="{{ url_for('parts', category='memory') }}">RAM</a></li>
-                        <li><a class="link-secondary text-decoration-none" href="{{ url_for('prebuilt_pcs') }}">Gaming PCs</a></li>
+                        <li><a class="link-secondary text-decoration-none" href="{{ url_for('parts', category='gamingpc') }}">Gaming PCs</a></li>
                     </ul>
                 </div>
                 <div class="col-6 col-md">
